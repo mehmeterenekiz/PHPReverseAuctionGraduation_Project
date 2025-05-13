@@ -1,0 +1,13 @@
+.menu_section ul li a:hover #color-font{
+    color: black;
+    transition: 0.3s ease;
+}
+
+body .nav .child_menu li:hover a {
+    background-color: transparent;  /* Arka planı şeffaf yapar */
+    color: black;                   /* Yazı rengini siyah yapar */
+}
+
+.nav .collapse-link{
+    margin-left: 4rem;
+}
