@@ -1,7 +1,7 @@
 ﻿<?php
 ob_start();
 session_start();
-$title = "Talep Oluştur";
+$title = "Talep Düzenle";
 require_once "header_user.php";
 
 $talepsor = $db->prepare("SELECT * FROM talep INNER JOIN kategori ON talep.kategori_id = kategori.kategori_id where talep.kullanici_id=:kullanici_id and talep.talep_id=:talep_id order by talep_zaman desc");
@@ -19,7 +19,7 @@ $talepcek = $talepsor->fetch(PDO::FETCH_ASSOC);
     <div class="container">
         <div class="pagination-wrapper">
             <ul>
-                <li><a href="index.php">Home</a><span> -</span></li>
+                <li><a href="index.php">Anasayfa</a><span> -</span></li>
                 <li>Hesabım</li>
             </ul>
         </div>
@@ -30,33 +30,8 @@ $talepcek = $talepsor->fetch(PDO::FETCH_ASSOC);
 <div class="settings-page-area bg-secondary section-space-bottom">
     <div class="container">
         <div class="row settings-wrapper">
-            <div class="col-lg-3 col-md-3 col-sm-4 col-xs-12">
-                <ul class="settings-title">
-                    <li>
-                        <p>Hesap Bilgilerim</p>
-                    </li>
-                    <li><a href="teklif-al-ver-basvuru"> Teklif & Talep Başvurusu </a></li>
-                    <li><a href="kullanici">Kullanıcı
-                            Bilgilerim</a></li>
-                    <li><a href="adres">Adres Bilgilerim</a></li>
-                    <li><a href="sifrem">Şifre Değişikliği</a></li>
-                </ul>
-
-                <?php if ($kullanicicek["kullanici_teklif_alma_verme"] == 2) { ?>
-                    <hr>
-
-                    <ul class="settings-title">
-                        <li>
-                            <p> Teklif & Talep </p>
-                        </li>
-                        <li><a href="talep-olustur"> Talep oluştur </a></li>
-                        <li><a href="taleplerim.php"> Taleplerim </a></li>
-                        <li><a href="alinan-teklifler">Aldığım Teklifler</a></li>
-                        <li><a href="verilen-teklifler">Verdiğim Teklifler</a></li>
-                    </ul>
-
-                <?php } ?>
-            </div>
+            
+            <?php require_once "sidebar-user.php" ?>
 
             <div class="col-lg-9 col-md-9 col-sm-8 col-xs-12">
                 <form action="nedmin/netting/kullanici-islem.php" method="POST" class="form-horizontal"
@@ -121,7 +96,7 @@ $talepcek = $talepsor->fetch(PDO::FETCH_ASSOC);
                                 <div class="date-picker">
                                     <label class="col-sm-3 control-label" style="margin-top: 1.8rem;">Kategori</label>
                                     <div class="dropdown" style="margin-left: 3.1rem !important; margin-top: 1.2rem;">
-                                        <select name="kategori_id" style="width: 171.5px;">
+                                        <select name="kategori_id" id="kategori_id" style="width: 171.5px;">
 
                                             <?php
                                             $kategorisor = $db->prepare("SELECT * FROM kategori order by kategori_sira asc ");
@@ -149,12 +124,25 @@ $talepcek = $talepsor->fetch(PDO::FETCH_ASSOC);
                                     </div>
                                 </div>
 
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label">Marka</label>
-                                    <div class="col-sm-9">
-                                        <input class="form-control" type="text" required value="<?php echo $talepcek['talep_marka'] ?>"
-                                            style="height: 4rem !important; text-transform:none; " name="talep_marka"
-                                            placeholder="Otomobil Markası">
+                                <div class="date-picker" id="marka">
+                                    <label class="col-sm-3 control-label" style="margin-top: 1.8rem;">Marka</label>
+                                    <div class="dropdown" style="margin-left: 3.1rem !important; margin-top: 1.2rem;">
+                                        <select name="talep_marka" style="width: 171.5px;">
+
+                                            <?php
+                                            $markasor = $db->prepare("SELECT * FROM vasitamarka order by marka_ad asc ");
+                                            $markasor->execute();
+
+                                            while ($markacek = $markasor->fetch(PDO::FETCH_ASSOC)) { ?>
+
+                                                <option value="<?php echo $markacek['marka_id'] ?>" <?php echo $markacek['marka_id']==$talepcek['talep_marka'] ? 'selected' : '';   ?>>
+                                                    <?php echo $markacek['marka_ad'] ?>
+                                                </option>
+
+                                            <?php } ?>
+                                        </select>
+
+                                        <i class="fa fa-angle-down" aria-hidden="true"></i>
                                     </div>
                                 </div>
 
@@ -174,7 +162,7 @@ $talepcek = $talepsor->fetch(PDO::FETCH_ASSOC);
                                     </div>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group" id="yakit_tipi">
                                     <label class="col-sm-3 control-label">Yakıt Tipi</label>
                                     <div class="col-sm-9">
                                         <div class="filter-container">
@@ -183,7 +171,7 @@ $talepcek = $talepsor->fetch(PDO::FETCH_ASSOC);
                                                 <span>Benzin</span>
                                             </label>
                                             <label>
-                                                <input type="checkbox" name="yakit[]" <?php echo str_contains($talepcek['talep_yakit_tipi'], "BenzinLPG") ? 'checked' : ''; ?> value="BenzinLPG">
+                                                <input type="checkbox" name="yakit[]" <?php echo str_contains($talepcek['talep_yakit_tipi'], "BenzinLPG") ? 'checked' : ''; ?> value="Benzin&LPG">
                                                 <span>Benzin & LPG</span>
                                             </label>
                                             <label>
@@ -202,7 +190,7 @@ $talepcek = $talepsor->fetch(PDO::FETCH_ASSOC);
                                     </div>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group" id="kasa_tipi">
                                     <label class="col-sm-3 control-label">Kasa Tipi</label>
                                     <div class="col-sm-9">
                                         <div class="filter-container">
@@ -234,7 +222,7 @@ $talepcek = $talepsor->fetch(PDO::FETCH_ASSOC);
                                     </div>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group" id="kapi_sayisi">
                                     <label class="col-sm-3 control-label">Kapı Sayısı</label>
                                     <div class="col-sm-9">
                                         <div class="filter-container">
@@ -254,7 +242,7 @@ $talepcek = $talepsor->fetch(PDO::FETCH_ASSOC);
                                     </div>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group" id="vites_tipi">
                                     <label class="col-sm-3 control-label">Vites Tipi</label>
                                     <div class="col-sm-9">
                                         <div class="filter-container" style="width:76.5%; ">
@@ -270,7 +258,7 @@ $talepcek = $talepsor->fetch(PDO::FETCH_ASSOC);
                                     </div>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group" id="km">
                                     <label class="col-sm-3 control-label">km</label>
                                     <div class="col-sm-3">
                                         <input class="form-control rakam" type="text" id="talep_min_km" required value="<?php echo $talepcek['talep_min_km'] ?>"
@@ -405,9 +393,9 @@ $talepcek = $talepsor->fetch(PDO::FETCH_ASSOC);
                                     <!-- Ck Editör Bitiş -->
 
                                     <input type="text" hidden name="talep_id" value="<?php echo $talepcek['talep_id'] ?>">
-                                    <input type="text" name="talep_cember_yaricap" id="talep_cember_yaricap" value="<?php echo $talepcek['talep_cember_yaricap'] ?>" >
-                                    <input type="text" name="talep_konum_enlem" id="enlem">
-                                    <input type="text" name="talep_konum_boylam" id="boylam">
+                                    <input type="text" hidden name="talep_cember_yaricap" id="talep_cember_yaricap" value="<?php echo $talepcek['talep_cember_yaricap'] ?>" >
+                                    <input type="text" hidden name="talep_konum_enlem" id="enlem">
+                                    <input type="text" hidden name="talep_konum_boylam" id="boylam">
 
                                     <div class="form-group">
                                         <div class="col-sm-12" style="text-align: right; position:">
@@ -421,7 +409,7 @@ $talepcek = $talepsor->fetch(PDO::FETCH_ASSOC);
                             </div>
                         </div>
                     </div>
-
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 </form>
             </div>
         </div>
@@ -579,4 +567,40 @@ $talepcek = $talepsor->fetch(PDO::FETCH_ASSOC);
         this.value = this.value.replace(/[^0-9]/g, '');  // Sadece rakamları kabul et
     });
 
+</script>
+
+<script>
+    $(document).ready(function () {
+        $("#kategori_id").change(function () {
+            var id = $(this).val();
+
+            if (id == "14") {
+                $("#marka, #yakit_tipi, #kasa_tipi, #kapi_sayisi, #vites_tipi, #km").show();
+            } else if (id == "15") {
+                $("#marka, #yakit_tipi, #kasa_tipi, #kapi_sayisi, #vites_tipi, #km").hide();
+            }
+        }).change();
+
+        $("form").submit(function () {
+            var id = $("#kategori_id").val();
+            if (id == "15") {
+                // Tüm input/select alanlarının değerini temizle
+                $("#marka input, #marka select, \
+              #yakit_tipi input, #yakit_tipi select, \
+              #kasa_tipi input, #kasa_tipi select, \
+              #kapi_sayisi input, #kapi_sayisi select, \
+              #vites_tipi input, #vites_tipi select, \
+              #km input, #km select").each(function () {
+
+                    if ($(this).is(':checkbox') || $(this).is(':radio')) {
+                        $(this).prop('checked', false);
+                    } else {
+                        $(this).val('');
+                    }
+                });
+
+                $("#marka select").val("1");
+             }
+        });
+    });
 </script>

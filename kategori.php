@@ -10,7 +10,7 @@ if (isset($_SESSION['user_kullanici_mail'])) {
 
 if (isset($_GET['kategori_id'])) {
 
-    $sayfada = 40;
+    $sayfada = 2;
     $kategori_id = $_GET['kategori_id'];
     $sorgu = $db->prepare("SELECT * FROM talep where talep_durum=:talep_durum and kategori_id=:kategori_id");
     $sorgu->execute(array(
@@ -29,13 +29,13 @@ if (isset($_GET['kategori_id'])) {
     }
     $limit = ($sayfa - 1) * $sayfada;
 
-    $talepsor = $db->prepare("SELECT * FROM talep inner join vasitamarka on talep.talep_marka = vasitamarka.marka_id where talep_durum=:talep_durum and talep.kategori_id=:kategori_id order by talep_zaman desc limit $limit,$sayfada");
+    $talepsor = $db->prepare("SELECT *, talep.kategori_id as talep_kategori FROM talep inner join vasitamarka on talep.talep_marka = vasitamarka.marka_id where talep_durum=:talep_durum and talep.kategori_id=:kategori_id order by talep_zaman desc limit $limit,$sayfada");
     $talepsor->execute(array(
         'talep_durum' => 1,
         'kategori_id' => $kategori_id,
     ));
 
-    $say=$sorgu->rowCount();
+    $say = $sorgu->rowCount();
 }
 ?>
 <style>
@@ -175,28 +175,86 @@ if (isset($_GET['kategori_id'])) {
                                 <div class="page-controls-sorting">
                                     <div class="dropdown-sorting">
                                         <button class="dropdown-sorting-button" onclick="toggleDropdownSorting()">
-                                            Gelişmiş sıralama <span class="arrow-sorting"><i class="bi bi-chevron-down"></i></span>
+                                            Gelişmiş sıralama <span class="arrow-sorting"><i
+                                                    class="bi bi-chevron-down"></i></span>
                                         </button>
-                                        <div class="dropdown-sorting-content" id="dropdown-sorting-menu">
-                                            <div>Fiyata göre (Önce en yüksek)</div>
-                                            <div>Fiyata göre (Önce en düşük)</div>
-                                            <div>Tarihe göre (Önce en yeni ilan)</div>
-                                            <div>Tarihe göre (Önce en eski ilan)</div>
-                                            <div>Km'ye göre (Önce en düşük)</div>
-                                            <div>Km'ye göre (Önce en yüksek)</div>
-                                            <div>Yıla göre (Önce en eski)</div>
-                                            <div>Yıla göre (Önce en yeni)</div>
-                                            <div>Adrese göre (A-Z)</div>
-                                            <div>Adrese göre (Z-A)</div>
+                                        <div class="dropdown-sorting-content" id="dropdown-sorting-menu"
+                                            data-kategori-seo="<?php echo seo($kategoricek['kategori_ad']) ?>"
+                                            data-kategori-id="<?php echo $_GET['kategori_id']; ?>">
+                                            <div data-sort="fiyat_desc">Fiyata göre (Önce en yüksek)</div>
+                                            <div data-sort="fiyat_asc">Fiyata göre (Önce en düşük)</div>
+                                            <div data-sort="tarih_desc">Tarihe göre (Önce en yeni ilan)</div>
+                                            <div data-sort="tarih_asc">Tarihe göre (Önce en eski ilan)</div>
+                                            <div data-sort="km_asc">Km'ye göre (Önce en düşük)</div>
+                                            <div data-sort="km_desc">Km'ye göre (Önce en yüksek)</div>
+                                            <div data-sort="yil_asc">Yıla göre (Önce en eski)</div>
+                                            <div data-sort="yil_desc">Yıla göre (Önce en yeni)</div>
+                                            <div data-sort="adres_az">Adrese göre (A-Z)</div>
+                                            <div data-sort="adres_za">Adrese göre (Z-A)</div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <script>
+                        $("#dropdown-sorting-menu div").on("click", function () {
+                            var sort = $(this).data("sort");
+                            var kategoriId = $("#dropdown-sorting-menu").data("kategori-id");
+                            var kategoriSeo = $("#dropdown-sorting-menu").data("kategori-seo");
+
+                            // Yeni aktif öğeyi işaretle
+                            $("#dropdown-sorting-menu div").removeClass("active");
+                            $(this).addClass("active");
+
+                            // Seçilen metni buton üzerine yaz
+                            var secilenMetin = $(this).text().trim().substring(0, 18) + "...";
+                            $(".dropdown-sorting-button").html(secilenMetin + ' <span class="arrow-sorting"><i class="bi bi-chevron-down"></i></span>');
+
+                            $.ajax({
+                                url: "../../nedmin/netting/ilan-filtre-api.php?kategori_id=" + kategoriId + "&kategori_seo=" + kategoriSeo + "&sayfa=1",
+                                type: "POST",
+                                data: { sort: sort },
+                                success: function (response) {
+                                    $("#ilanlar-alani").html(response);
+                                    initMap();
+                                },
+                                error: function () {
+                                    alert("Bir hata oluştu.");
+                                }
+                            });
+                        });
+
+
+                        // Sayfalama linklerine tıklanınca çalışır
+                        $(document).on("click", ".pagination-link", function (e) {
+                            e.preventDefault();
+
+                            var sayfa = $(this).data("sayfa");
+                            var kategoriId = $("#dropdown-sorting-menu").data("kategori-id");
+                            var kategoriSeo = $("#dropdown-sorting-menu").data("kategori-seo");
+
+                            // Aktif sıralama türünü bul
+                            var sort = $("#dropdown-sorting-menu div.active").data("sort") || "tarih_desc";
+
+                            $.ajax({
+                                url: "../../nedmin/netting/ilan-filtre-api.php?kategori_id=" + kategoriId + "&kategori_seo=" + kategoriSeo + "&sayfa=" + sayfa,
+                                type: "POST",
+                                data: { sort: sort },
+                                success: function (response) {
+                                    $("#ilanlar-alani").html(response);
+                                    initMap();
+                                },
+                                error: function () {
+                                    alert("Sayfa yüklenemedi.");
+                                }
+                            });
+                        });
+
+                    </script>
                     <div class="tab-content">
                         <div role="tabpanel" class="tab-pane fade in active clear products-container" id="gried-view">
-                            <div class="product-grid-view padding-narrow">
+                            <div class="product-grid-view padding-narrow" id="ilanlar-alani">
                                 <div class="row">
                                     <?php
                                     while ($talepcek = $talepsor->fetch(PDO::FETCH_ASSOC)) { ?>
@@ -223,15 +281,23 @@ if (isset($_GET['kategori_id'])) {
                                                             <h5>
                                                                 <?php
                                                                 $ad = turkce_title_case($talepcek['talep_ad']); // önce baş harfleri büyüt
-                                                                echo mb_strlen($ad, 'UTF-8') > 26 ? mb_substr($ad, 0, 26, 'UTF-8') . '...' : $ad;
+                                                                echo mb_strlen($ad, 'UTF-8') > 24 ? mb_substr($ad, 0, 24, 'UTF-8') . '...' : $ad;
                                                                 ?>
                                                             </h5>
 
-                                                            <span> <?php echo $talepcek['marka_ad'] ?> </span>
+                                                            <?php if($talepcek['talep_kategori']==14) { ?>
+
+                                                                <span> <?php echo $talepcek['marka_ad'] . " -"  ?> </span>
+                                                            
+                                                            <?php } else{ ?>
+
+
+                                                            <?php } ?>
+
                                                             <span style="text-transform: none;">
                                                                 <?php
                                                                 $sehir = turkce_title_case($talepcek['talep_sehir']);
-                                                                echo "- " . (mb_strlen($sehir, 'UTF-8') > 10 ? mb_substr($sehir, 0, 10, 'UTF-8') . '...' : $sehir);
+                                                                echo "" . (mb_strlen($sehir, 'UTF-8') > 10 ? mb_substr($sehir, 0, 10, 'UTF-8') . '...' : $sehir);
                                                                 ?>
                                                             </span>
                                                             <div class="price">
@@ -270,46 +336,28 @@ if (isset($_GET['kategori_id'])) {
                                             <li><a href="#">2</a></li>
                                             <li><a href="#">3</a></li>
                                 -->
-                                <?php if($toplam_icerik>40) { ?>
+                                <?php if ($toplam_sayfa > 1) { ?>
                                     <div class="row">
-                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                        <ul class="pagination-align-left">
-                                        
-                                        <?php $s=0;
-                                        while($s < $toplam_sayfa){ $s++; ?>
-                                            <?php if(!empty($_GET['kategori_id'])){  
+                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                            <ul class="pagination-align-left">
+                                                <?php
+                                                for ($s = 1; $s <= $toplam_sayfa; $s++) {
+                                                    $aktifMi = ($s == $sayfa) ? 'style="background-color: rgba(231,76,60,255); color: white;"' : '';
 
-                                                        if($s==$sayfa){ ?>
+                                                    if (!empty($_GET['kategori_id'])) {
+                                                        $url = "kategori-{$_GET['sef']}-{$_GET['kategori_id']}?sayfa=$s";
+                                                    } else {
+                                                        $url = "kategori?sayfa=$s";
+                                                    }
 
-                                                            <li><a style="background-color: rgba(231,76,60,255); color: white;" href="kategori-<?php echo $_GET['sef']; ?>-<?php echo $_GET['kategori_id'] ?>?sayfa=<?php echo $s; ?>"><?php echo $s; ?></a></li>
-
-                                                        <?php } else {?>
-
-                                                            <li><a href="kategori-<?php echo $_GET['sef']; ?>-<?php echo $_GET['kategori_id'] ?>?sayfa=<?php echo $s; ?>"><?php echo $s; ?></a></li>
-
-                                                        <?php } ?>
-
-                                            <?php } else {
-
-                                                        if($s==$sayfa){ ?>
-
-                                                            <li><a style="background-color: rgba(231,76,60,255); color: white;" href="kategori?sayfa=<?php echo $s; ?>"><?php echo $s; ?></a></li>
-
-                                                        <?php } else {?>
-
-                                                            <li><a href="kategori?sayfa=<?php echo $s; ?>"><?php echo $s; ?></a></li>
-
-                                                        <?php } ?>
-                                            <?php } ?>
-
-                                       <?php } ?>
-
-                                        </ul>
+                                                    echo "<li><a href='$url' $aktifMi>$s</a></li>";
+                                                }
+                                                ?>
+                                            </ul>
+                                        </div>
                                     </div>
-                                </div>
-                                <?php } else { ?>
-                                    
                                 <?php } ?>
+
                             </div>
                         </div>
                         <div role="tabpanel" class="tab-pane fade clear products-container" id="list-view">
@@ -363,37 +411,43 @@ if (isset($_GET['kategori_id'])) {
                                 <div class="row">
                                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                         <ul class="pagination-align-left">
-                                        
-                                        <?php $s=0;
-                                        while($s < $toplam_sayfa){ $s++; ?>
-                                            <?php if(!empty($_GET['kategori_id'])){  
 
-                                                        if($s==$sayfa){ ?>
+                                            <?php $s = 0;
+                                            while ($s < $toplam_sayfa) {
+                                                $s++; ?>
+                                                <?php if (!empty($_GET['kategori_id'])) {
 
-                                                            <li><a style="background-color: rgba(231,76,60,255); color: white;" href="kategori-<?php echo $_GET['sef']; ?>-<?php echo $_GET['kategori_id'] ?>?sayfa=<?php echo $s; ?>"><?php echo $s; ?></a></li>
+                                                    if ($s == $sayfa) { ?>
 
-                                                        <?php } else {?>
+                                                        <li><a style="background-color: rgba(231,76,60,255); color: white;"
+                                                                href="kategori-<?php echo $_GET['sef']; ?>-<?php echo $_GET['kategori_id'] ?>?sayfa=<?php echo $s; ?>"><?php echo $s; ?></a>
+                                                        </li>
 
-                                                            <li><a href="kategori-<?php echo $_GET['sef']; ?>-<?php echo $_GET['kategori_id'] ?>?sayfa=<?php echo $s; ?>"><?php echo $s; ?></a></li>
+                                                    <?php } else { ?>
+
+                                                        <li><a
+                                                                href="kategori-<?php echo $_GET['sef']; ?>-<?php echo $_GET['kategori_id'] ?>?sayfa=<?php echo $s; ?>"><?php echo $s; ?></a>
+                                                        </li>
 
 
-                                                        <?php } ?>
+                                                    <?php } ?>
 
-                                                
-                                            <?php } else {
 
-                                                        if($s==$sayfa){ ?>
+                                                <?php } else {
 
-                                                            <li><a style="background-color: rgba(231,76,60,255); color: white;" href="kategori?sayfa=<?php echo $s; ?>"><?php echo $s; ?></a></li>
+                                                    if ($s == $sayfa) { ?>
 
-                                                        <?php } else {?>
+                                                        <li><a style="background-color: rgba(231,76,60,255); color: white;"
+                                                                href="kategori?sayfa=<?php echo $s; ?>"><?php echo $s; ?></a></li>
 
-                                                            <li><a href="kategori?sayfa=<?php echo $s; ?>"><?php echo $s; ?></a></li>
+                                                    <?php } else { ?>
 
-                                                        <?php } ?>
+                                                        <li><a href="kategori?sayfa=<?php echo $s; ?>"><?php echo $s; ?></a></li>
+
+                                                    <?php } ?>
+                                                <?php } ?>
+
                                             <?php } ?>
-
-                                       <?php } ?>
 
                                         </ul>
                                     </div>
@@ -519,4 +573,23 @@ if (isset($_GET['kategori_id'])) {
     });
 
 
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('.layout-switcher li a').on('click', function (e) {
+            e.preventDefault();
+
+            // Sekmelerde aktif sınıfı değiştir
+            $('.layout-switcher li').removeClass('active');
+            $(this).parent().addClass('active');
+
+            // Tüm içerikleri gizle
+            $('.tab-pane').removeClass('in active').hide();
+
+            // Tıklanan sekmeye ait içeriği göster
+            var target = $(this).attr('href'); // #list-view veya #gried-view
+            $(target).addClass('in active').fadeIn();
+        });
+    });
 </script>

@@ -4,6 +4,7 @@ session_start();
 
 require_once "baglan.php";
 require_once "../production/fonksiyon.php";
+require_once 'send-mail-kullanici-onay.php';
 
 if (isset($_POST["kullanici_kaydet"])) {
     $kullanici_ad_soyad = htmlspecialchars(trim($_POST["kullanici_ad_soyad"])); // input içerisinde yazılır bir script varsa script içini temizler.
@@ -49,6 +50,7 @@ if (isset($_POST["kullanici_kaydet"])) {
                 $kullanici_yetki = 1;
                 $kullanici_ad_soyad = trim($kullanici_ad_soyad);
                 $kullanici_ad_soyad = explode(" ", $kullanici_ad_soyad);
+                $dogrulama_kodu = bin2hex(random_bytes(32));
 
                 if (count($kullanici_ad_soyad) > 1) {
                     // Ad kısmı tüm kelimeleri al
@@ -65,25 +67,24 @@ if (isset($_POST["kullanici_kaydet"])) {
                     kullanici_soyad=:kullanici_soyad,
                     kullanici_mail=:kullanici_mail,
                     kullanici_password=:kullanici_password,
-                    kullanici_yetki=:kullanici_yetki");
+                    kullanici_yetki=:kullanici_yetki,
+                    dogrulama_kodu=:dogrulama_kodu,
+                    dogrulama_durumu=:dogrulama_durumu");
 
                 $insert = $kullanicikaydet->execute(array(
                     'kullanici_ad' => mb_convert_case($kullanici_ad, MB_CASE_TITLE, "UTF-8"),
                     'kullanici_soyad' => mb_convert_case($kullanici_soyad, MB_CASE_TITLE, "UTF-8"),
                     'kullanici_mail' => $kullanici_mail,
                     'kullanici_password' => $password,
-                    'kullanici_yetki' => $kullanici_yetki
+                    'kullanici_yetki' => $kullanici_yetki,
+                    'dogrulama_kodu' => $dogrulama_kodu,
+                    'dogrulama_durumu' => 0
+
                 ));
 
                 if ($insert) {
-                    $kullanicidene = $db->prepare("select * from kullanici where kullanici_mail=:mail");
-                    $kullanicidene->execute(array(
-                        'mail' => $kullanici_mail,
-                    ));
-                    $kullanicicek = $kullanicidene->fetch(PDO::FETCH_ASSOC);
-                    $kullanici_id = $kullanicicek["kullanici_id"];
-                    $_SESSION["user_kullanici_mail"] = $kullanici_id;   // id gönderiliyor
-                    header("location:../../teklif-al-ver-basvuru");
+                    mailGonder($kullanici_mail, $dogrulama_kodu, $_POST["kullanici_ad_soyad"]);
+                    header("location:../../sign-up.php?durum=kullanici_dogrulama");
                     exit;
 
                 } else {
@@ -92,7 +93,15 @@ if (isset($_POST["kullanici_kaydet"])) {
                 }
 
             } else {
-                header("location:../../sign-up.php?durum=mukerrerkayit");
+                $kullanicicek = $kullanicisor->fetch(PDO::FETCH_ASSOC);
+                if ($kullanicicek['dogrulama_durumu'] == '0') {
+                    mailGonder($kullanici_mail, $dogrulama_kodu, $_POST["kullanici_ad_soyad"]);
+                    header("location:../../sign-up.php?durum=kullanici_dogrulama");
+                    exit;
+                } else {
+                    header("location:../../sign-up.php?durum=mukerrerkayit");
+                    exit;
+                }
             }
         }
     } else {
@@ -103,7 +112,7 @@ if (isset($_POST["kullanici_kaydet"])) {
 
 if (isset($_POST["kullanici_giris"])) {
 
-    $talep_url = $_POST["talep_url"];
+    $talep_url = isset($_POST["talep_url"]) ? $_POST["talep_url"] : '';
     $kullanici_mail = htmlspecialchars(trim($_POST["kullanici_mail"]));
     $kullanici_password = md5(htmlspecialchars(trim($_POST["kullanici_password"])));
 
@@ -123,26 +132,64 @@ if (isset($_POST["kullanici_giris"])) {
     $say = $kullanicisor->rowCount();
 
     if ($say == 1) {
-        $kullanicidene = $db->prepare("select * from kullanici where kullanici_mail=:mail");
+
+        $kullanici_son_ip = $_SERVER['REMOTE_ADDR'];
+        $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
+
+        // Kullanıcı IP'sini "kullanici" tablosuna güncelle
+        $kullanici_son_ip_guncelle = $db->prepare("UPDATE kullanici SET kullanici_son_ip=:kullanici_son_ip WHERE kullanici_mail=:kullanici_mail");
+        $kullanici_son_ip_guncelle->execute(array(
+            'kullanici_son_ip' => $kullanici_son_ip,
+            'kullanici_mail' => $kullanici_mail,
+        ));
+
+        // Kullanıcı verilerini al
+        $kullanicidene = $db->prepare("SELECT * FROM kullanici WHERE kullanici_mail=:mail");
         $kullanicidene->execute(array(
             'mail' => $kullanici_mail,
         ));
         $kullanicicek = $kullanicidene->fetch(PDO::FETCH_ASSOC);
-        $kullanici_id = $kullanicicek["kullanici_id"];
-        $_SESSION["user_kullanici_mail"] = $kullanici_id;    // id gönderiliyor
+        if ($kullanicicek['dogrulama_durumu'] == '0') {
+            $dogrulama_kodu = bin2hex(random_bytes(32));
 
-        if (isset($talep_url)) {
+            $kullanicikaydet = $db->prepare("UPDATE kullanici SET 
+            dogrulama_kodu = :dogrulama_kodu 
+            WHERE kullanici_mail = :kullanici_mail");
 
-            header("location:../../$talep_url");
-            exit;
+            $insert = $kullanicikaydet->execute(array(
+                'dogrulama_kodu' => $dogrulama_kodu,
+                'kullanici_mail' => $kullanici_mail
+            ));
 
-        } else {
-
-            header("location:../../");
+            mailGonder($kullanici_mail, $dogrulama_kodu, $kullanicicek['kullanici_ad']);
+            header("location:../../sign-in.php?durum=kullanici_dogrulama");
             exit;
 
         }
+        $kullanici_id = $kullanicicek["kullanici_id"];
+        $_SESSION["user_kullanici_mail"] = $kullanici_id;
 
+        // 📥 IP log tablosuna yeni kayıt ekle (INSERT)
+        $ip_log_ekle = $db->prepare("INSERT INTO kullaniciiplog (kullanici_mail, ip_address, user_agent) VALUES (:kullanici_mail, :ip_address, :user_agent)");
+        $ip_log_ekle->execute(array(
+            'kullanici_mail' => $kullanici_mail,
+            'ip_address' => $kullanici_son_ip,
+            'user_agent' => $user_agent
+        ));
+
+        // Yönlendirme
+        if (!empty($talep_url)) {
+            header("Location: ../../$talep_url");
+            exit;
+        } else {
+            if ($kullanicicek["kullanici_teklif_alma_verme"] == 0) {
+                header("Location: ../../teklif-al-ver-basvuru");
+                exit;
+            } else {
+               header("Location: ../../");
+               exit;
+            }
+        }
     } else {
         header("location:../../sign-in.php?durum=no");
         exit;
@@ -223,11 +270,15 @@ if (isset($_GET["email"])) {
 
             header("location:../../sign-up.php?durum=basarisiz");
         }
-        
+
     }
 }
 
 if (isset($_POST["kullanici_bilgiler_duzenle"])) {
+
+    if ($_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Geçersiz istek (CSRF)!");
+    }
 
     $kullanici_id = $_SESSION['user_kullanici_mail']; //bu aslında bizim idmiz idmizi çekiyoruz user_kullanici_mail sessiona
 
@@ -260,6 +311,10 @@ if (isset($_POST["kullanici_bilgiler_duzenle"])) {
 }
 
 if (isset($_POST["kullanici_adres_duzenle"])) {
+
+    if ($_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Geçersiz istek (CSRF)!");
+    }
 
     $kullanici_id = $_SESSION['user_kullanici_mail'];   // burada aslında mail değil id gelmekte...
 
@@ -372,6 +427,10 @@ if (isset($_POST["kullanici_adres_duzenle"])) {
 
 if (isset($_POST['kullanici_sifre_duzenle'])) {
 
+    if ($_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Geçersiz istek (CSRF)!");
+    }
+
     $kullanici_password_old = htmlspecialchars(trim($_POST['kullanici_password_old']));
     $kullanici_password_new1 = htmlspecialchars(trim($_POST['kullanici_password_new1']));
     $kullanici_password_new2 = htmlspecialchars(trim($_POST['kullanici_password_new2']));
@@ -400,35 +459,48 @@ if (isset($_POST['kullanici_sifre_duzenle'])) {
         //eski şifre doğruysa başla
         if ($kullanici_password_new1 == $kullanici_password_new2) {
 
-            if (strlen($kullanici_password_new1) >= 10) {
+            $eksikler = [];
 
+            if (strlen($kullanici_password_new1) < 10) {
+                $eksikler[] = "karakter";
+            }
 
-                //md5 fonksiyonu şifreyi md5 şifreli hale getirir.
+            if (!preg_match('/[A-Z]/', $kullanici_password_new1)) {
+                $eksikler[] = "buyukharf";
+            }
+
+            if (!preg_match('/[a-z]/', $kullanici_password_new1)) {
+                $eksikler[] = "kucukharf";
+            }
+
+            if (!preg_match('/[0-9]/', $kullanici_password_new1)) {
+                $eksikler[] = "rakam";
+            }
+
+            if (!empty($eksikler)) {
+                $durum = implode("-", $eksikler);
+                header("location:../../sifrem.php?durum=$durum");
+            } else {
+
                 $password = md5($kullanici_password_new1);
 
                 $kullanici_yetki = 1;
 
                 $kullanicikaydet = $db->prepare("UPDATE kullanici SET
-					kullanici_password=:kullanici_password
-					WHERE kullanici_id=$kullanici_id");
-
+                kullanici_password=:kullanici_password
+                WHERE kullanici_id=$kullanici_id");
 
                 $update = $kullanicikaydet->execute(array(
                     'kullanici_password' => $password
                 ));
 
                 if ($update) {
-
                     header("Location:../../sifrem?sifrem=ok");
                     exit;
-
                 } else {
                     header("Location:../../sifrem?sifrem=no");
                     exit;
                 }
-            } else {
-                header("Location:../../sifrem?sifrem=eksiksifre");
-                exit;
             }
 
         } else {
@@ -441,6 +513,10 @@ if (isset($_POST['kullanici_sifre_duzenle'])) {
 }
 
 if (isset($_POST["kullanici_teklif_basvuru"])) {
+
+    if ($_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Geçersiz istek (CSRF)!");
+    }
 
     $kullanici_id = $_SESSION['user_kullanici_mail'];   // burada mail değil id geliyor aslında
 
@@ -551,6 +627,10 @@ if (isset($_POST["kullanici_teklif_basvuru"])) {
 
 if (isset($_POST["talep_olustur"])) {
 
+    if ($_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Geçersiz istek (CSRF)!");
+    }
+
     $talep_seourl = seo(htmlspecialchars(trim($_POST["talep_ad"])));
 
     $kullanici_id = $_SESSION['user_kullanici_mail'];   // burada aslında mail değil id gelmekte...
@@ -637,6 +717,10 @@ if (isset($_POST["talep_olustur"])) {
 
 
 if (isset($_POST["talep_duzenle"])) {
+
+    if ($_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Geçersiz istek (CSRF)!");
+    }
 
     $talep_seourl = seo(htmlspecialchars(trim($_POST["talep_ad"])));
 
@@ -740,6 +824,10 @@ if (isset($_GET["talep_kaldır"]) && $_GET["talep_kaldır"] === "ok") {
 
 if (isset($_POST["teklif_ver"])) {
 
+    if ($_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Geçersiz istek (CSRF)!");
+    }
+
     $insert_teklif = $db->prepare("insert into teklif set 
 
             talep_id=:talep_id,
@@ -785,6 +873,10 @@ if (isset($_GET["talep_url_taleplerim"])) {
 }
 
 if (isset($_POST["teklif_duzenle"])) {
+
+    if ($_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Geçersiz istek (CSRF)!");
+    }
 
     echo $teklif_id = htmlspecialchars(trim($_POST["teklif_id"]));
 
@@ -848,8 +940,12 @@ if (isset($_GET["teklif_kaldir"]) && $_GET["teklif_kaldir"] === "ok") {
 
 if (isset($_POST["revize_iste"])) {
 
+    if ($_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Geçersiz istek (CSRF)!");
+    }
+
     echo $teklif_id = htmlspecialchars(trim($_POST["teklif_id"]));
-   
+
 
     $update_teklif = $db->prepare("update teklif set 
 
@@ -857,7 +953,7 @@ if (isset($_POST["revize_iste"])) {
             where teklif_id = $teklif_id ");
 
     $updateteklif = $update_teklif->execute(array(
-            "teklif_onay_durum" => 1,
+        "teklif_onay_durum" => 1,
     ));
 
 
@@ -872,6 +968,10 @@ if (isset($_POST["revize_iste"])) {
 
 if (isset($_POST["teklif_onayla"])) {
 
+    if ($_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Geçersiz istek (CSRF)!");
+    }
+
     echo $teklif_id = htmlspecialchars(trim($_POST["teklif_id"]));
 
     $update_teklif = $db->prepare("update teklif set 
@@ -880,7 +980,7 @@ if (isset($_POST["teklif_onayla"])) {
             where teklif_id = $teklif_id ");
 
     $updateteklif = $update_teklif->execute(array(
-            "teklif_onay_durum" => 3,
+        "teklif_onay_durum" => 3,
     ));
 
 
@@ -912,5 +1012,10 @@ if (isset($_GET["teklif_reddet"]) && $_GET["teklif_reddet"] === "ok") {
         header("location: ../../alinan-teklifler.php?teklif_reddet=no");
         exit;
     }
+}
+
+if (isset($_GET["kullanici_aktif_degil"])) {
+    header("location: ../../teklif-al-ver-basvuru");
+    exit;
 }
 ?>

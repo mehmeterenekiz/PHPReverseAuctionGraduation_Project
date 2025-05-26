@@ -4,6 +4,9 @@ session_start();
 
 if (isset($_SESSION['user_kullanici_mail'])) {
     require_once "header_user.php";
+    if ($_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Geçersiz istek (CSRF)!");
+    }
 } else {
     require_once 'header.php';
 }
@@ -189,7 +192,7 @@ if (isset($_SESSION['user_kullanici_mail'])) {
                                         
                                         $limit = ($sayfa - 1) * $sayfada;
 
-                                        $talepsor = $db->prepare("SELECT * FROM talep inner join vasitamarka on talep.talep_marka = vasitamarka.marka_id where talep_durum=:talep_durum and talep_ad 
+                                        $talepsor = $db->prepare("SELECT *, talep.kategori_id as talep_kategori FROM talep inner join vasitamarka on talep.talep_marka = vasitamarka.marka_id where talep_durum=:talep_durum and talep_ad 
                                         like '%$searchkeywords%' or marka_ad like '%$searchkeywords%' or talep_kasa_tipi like '%$searchkeywords%'
                                         or talep_sehir like '%$searchkeywords%'
                                         order by talep_zaman desc limit $sayfada");
@@ -235,10 +238,26 @@ if (isset($_SESSION['user_kullanici_mail'])) {
                                                     href="talep-<?= seo($talepcek['talep_ad']) . "-" . $talepcek['talep_id'] ?>">
                                                     <div class="item-content">
                                                         <div class="item-info">
-                                                            <h5><?php echo mb_strlen($talepcek['talep_ad'], 'UTF-8') > 26 ? mb_substr($talepcek['talep_ad'], 0, 26, 'UTF-8') . '...' : $talepcek['talep_ad']; ?>
+                                                            <h5>
+                                                            <?php echo mb_strlen($talepcek['talep_ad'], 'UTF-8') > 26 ? mb_substr($talepcek['talep_ad'], 0, 26, 'UTF-8') . '...' : $talepcek['talep_ad']; 
+                                                            ?>
                                                             </h5> <!-- burada karakter setiyle ilgili problem var -->
-                                                            <span> <?php echo $talepcek['marka_ad'] ?> </span>
-                                                            <span style="text-transform: none;" > <?php echo "- " . $talepcek['talep_sehir']?> </span>
+
+                                                            <?php if($talepcek['talep_kategori']==14) { ?>
+
+                                                                <span> <?php echo $talepcek['marka_ad'] . " -"  ?> </span>
+                                                            
+                                                            <?php } else{ ?>
+
+
+                                                            <?php } ?>
+
+                                                            <span style="text-transform: none;">
+                                                                <?php
+                                                                    $sehir = turkce_title_case($talepcek['talep_sehir']);
+                                                                    echo "" . (mb_strlen($sehir, 'UTF-8') > 10 ? mb_substr($sehir, 0, 10, 'UTF-8') . '...' : $sehir);
+                                                                ?>
+                                                            </span>
                                                             <div class="price">
                                                                 <?php echo $talepcek['talep_fiyat'] . " " . "TL" ?>
                                                             </div>

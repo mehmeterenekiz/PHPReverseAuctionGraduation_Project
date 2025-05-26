@@ -103,6 +103,11 @@
             </div>
         </div>
     </div>
+    <style>
+        .container p{
+            text-transform: none;
+        }
+    </style>
     <div class="footer-area-bottom">
         <div class="container">
             <p style="color: #ffffff;" ><?php echo $ayarcek['ayar_author'] ?></p>

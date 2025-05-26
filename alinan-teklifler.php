@@ -3,6 +3,20 @@ ob_start();
 session_start();
 $title = "Alınan Teklifler";
 require_once "header_user.php";
+
+$user_kullanici_id = $_SESSION['user_kullanici_mail'];
+$kontrol_aktiflik = $db->prepare("SELECT * FROM kullanici WHERE kullanici_id=:user_kullanici_id");
+$kontrol_aktiflik->execute(array(
+    'user_kullanici_id' => $user_kullanici_id
+));
+
+$kontrolaktiflikcek = $kontrol_aktiflik->fetch(PDO::FETCH_ASSOC);
+
+if ($kontrolaktiflikcek['kullanici_teklif_alma_verme'] == 0 || $kontrolaktiflikcek['kullanici_teklif_alma_verme'] == 1) {
+    header("location: ../../teklif-al-ver-basvuru?durum=aktifdegil");
+    exit;
+}
+
 ?>
 <style>
     .map {
@@ -74,7 +88,7 @@ require_once "header_user.php";
     <div class="container">
         <div class="pagination-wrapper">
             <ul>
-                <li><a href="index.php">Home</a><span> -</span></li>
+                <li><a href="index.php">Anasayfa</a><span> -</span></li>
                 <li>Hesabım</li>
             </ul>
         </div>
@@ -443,6 +457,7 @@ require_once "header_user.php";
                         <input type="text" hidden id="teklif_cember_yaricap">
                         <input type="text" hidden name="teklif_konum_enlem" id="enlem">
                         <input type="text" hidden name="teklif_konum_boylam" id="boylam">
+                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                     </form>
                 </div>
             </div>

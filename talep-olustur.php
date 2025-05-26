@@ -3,16 +3,31 @@ ob_start();
 session_start();
 $title = "Talep Oluştur";
 require_once "header_user.php";
+
+$user_kullanici_id = $_SESSION['user_kullanici_mail'];
+$kontrol_aktiflik = $db->prepare("SELECT * FROM kullanici WHERE kullanici_id=:user_kullanici_id");
+$kontrol_aktiflik->execute(array(
+    'user_kullanici_id' => $user_kullanici_id
+));
+
+$kontrolaktiflikcek = $kontrol_aktiflik->fetch(PDO::FETCH_ASSOC);
+
+if ($kontrolaktiflikcek['kullanici_teklif_alma_verme'] == 0 || $kontrolaktiflikcek['kullanici_teklif_alma_verme'] == 1) {
+    header("location: ../../teklif-al-ver-basvuru?durum=aktifdegil");
+    exit;
+}
+
 ?>
 
 <?php require_once "arama-cubuk.php"; ?>
+
 
 <!-- Inner Page Banner Area Start Here -->
 <div class="pagination-area bg-secondary">
     <div class="container">
         <div class="pagination-wrapper">
             <ul>
-                <li><a href="index.php">Home</a><span> -</span></li>
+                <li><a href="index.php">Anasayfa</a><span> -</span></li>
                 <li>Hesabım</li>
             </ul>
         </div>
@@ -24,7 +39,7 @@ require_once "header_user.php";
     <div class="container">
         <div class="row settings-wrapper">
 
-        <?php require_once "sidebar-user.php" ?>
+            <?php require_once "sidebar-user.php" ?>
 
             <div class="col-lg-9 col-md-9 col-sm-8 col-xs-12">
                 <form action="nedmin/netting/kullanici-islem.php" method="POST" class="form-horizontal"
@@ -154,7 +169,7 @@ require_once "header_user.php";
                                                 <span>Benzin</span>
                                             </label>
                                             <label>
-                                                <input type="checkbox" name="yakit[]" value="BenzinLPG">
+                                                <input type="checkbox" name="yakit[]" value="Benzin&LPG">
                                                 <span>Benzin & LPG</span>
                                             </label>
                                             <label>
@@ -241,7 +256,7 @@ require_once "header_user.php";
                                     </div>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group" id="km">
                                     <label class="col-sm-3 control-label">km</label>
                                     <div class="col-sm-3">
                                         <input class="form-control rakam" type="text" id="talep_min_km" required
@@ -346,9 +361,10 @@ require_once "header_user.php";
                                         <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Talep
                                             Açıklaması
                                         </label>
-                                        <div class="col-md-9 col-sm-9 col-xs-12" >
+                                        <div class="col-md-9 col-sm-9 col-xs-12">
                                             <textarea class="ckeditor" id="editor1" name="talep_detay" required
-                                                placeholder="Talep Açıklaması" style="text-transform: lowercase !important;"></textarea>
+                                                placeholder="Talep Açıklaması"
+                                                style="text-transform: lowercase !important;"></textarea>
                                         </div>
                                     </div>
 
@@ -374,9 +390,9 @@ require_once "header_user.php";
                                     </script>
                                     <!-- Ck Editör Bitiş -->
 
-                                    <input type="text" name="talep_cember_yaricap" id="talep_cember_yaricap">
-                                    <input type="text" name="talep_konum_enlem" id="enlem">
-                                    <input type="text" name="talep_konum_boylam" id="boylam">
+                                    <input type="text" hidden name="talep_cember_yaricap" id="talep_cember_yaricap">
+                                    <input type="text" hidden name="talep_konum_enlem" id="enlem">
+                                    <input type="text" hidden name="talep_konum_boylam" id="boylam">
 
                                     <div class="form-group">
                                         <div class="col-sm-12" style="text-align: right; position:">
@@ -390,7 +406,7 @@ require_once "header_user.php";
                             </div>
                         </div>
                     </div>
-
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 </form>
             </div>
         </div>
@@ -547,21 +563,42 @@ require_once "header_user.php";
 <script>
     $(document).ready(function () {
         $("#kategori_id").change(function () {
-            var id = $("#kategori_id").val();
+            var id = $(this).val();
 
             if (id == "14") {
-                $("#marka").show();
-                $("#yakit_tipi").show();
-                $("#kasa_tipi").show();
-                $("#kapi_sayisi").show();
-                $("#vites_tipi").show();
+                $("#marka, #yakit_tipi, #kasa_tipi, #kapi_sayisi, #vites_tipi, #km").show();
+                $("#km input").prop("required", true);
             } else if (id == "15") {
-                $("#marka").hide();
-                $("#yakit_tipi").hide();
-                $("#kasa_tipi").hide();
-                $("#kapi_sayisi").hide();
-                $("#vites_tipi").hide();
+                $("#marka, #yakit_tipi, #kasa_tipi, #kapi_sayisi, #vites_tipi, #km").hide();
+                $("#km input").prop("required", false);
             }
         }).change();
+
+        $("form").submit(function () {
+            var id = $("#kategori_id").val();
+            if (id == "15") {
+                // Belirtilen alanlardaki input/select değerlerini temizle ve required'ı kaldır
+                $("#marka input, #marka select, \
+                    #yakit_tipi input, #yakit_tipi select, \
+                    #kasa_tipi input, #kasa_tipi select, \
+                    #kapi_sayisi input, #kapi_sayisi select, \
+                    #vites_tipi input, #vites_tipi select, \
+                    #km input, #km select").each(function () {
+
+                    // Required'ı kaldır
+                    $("#km input").prop("required", false);
+
+                    if ($(this).is(':checkbox') || $(this).is(':radio')) {
+                        $(this).prop('checked', false);
+                    } else {
+                        $(this).val('');
+                    }
+                });
+
+                // Marka select alanını varsayılan değere ayarla (örnek: "1")
+                $("#marka select").val("1").prop("required", false);
+            }
+        });
+
     });
 </script>

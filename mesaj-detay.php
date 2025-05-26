@@ -377,7 +377,7 @@ require_once "header_user.php";
     <div class="container">
         <div class="pagination-wrapper">
             <ul>
-                <li><a href="index.php">Home</a><span> -</span></li>
+                <li><a href="index.php">Anasayfa</a><span> -</span></li>
                 <li>Hesabım</li>
             </ul>
         </div>
@@ -654,7 +654,7 @@ if (isset($_GET['kime'])) { ?>
                                                 <input type="text" hidden name="talep_id"
                                                     value="<?php echo $talepcek['talep_id']; ?>">
 
-                                                <button type="button" class="send-icon" onclick="start(this)"
+                                                <button type="button" class="send-icon" onclick="mesajgonder(this)"
                                                     id="gonder-btn" disabled>
                                                     <span>Gönder</span>
                                                 </button>
@@ -665,7 +665,7 @@ if (isset($_GET['kime'])) { ?>
                                                 var intervalBasladi = false;
                                                 var oncekiMesajSayisi = 0;
 
-                                                function start(button) {
+                                                function mesajgonder(button) {
                                                     kime = $("input[name='kime']").val();
                                                     kimden = $("input[name='kimden']").val();
                                                     talep_id = $("input[name='talep_id']").val();
@@ -683,12 +683,12 @@ if (isset($_GET['kime'])) { ?>
                                                         success: function (result) {
                                                             $("input[name='mesaj-input']").val("");
                                                             console.log(result);
-                                                            veriCek(true); // scroll yapılacak
+                                                            mesajCek(true); // scroll yapılacak
                                                         },
                                                     });
                                                 }
 
-                                                function veriCek(scrollZorla = false) {
+                                                function mesajCek(scrollZorla = false) {
                                                     $.ajax({
                                                         url: "../../nedmin/netting/mesajlar-api.php?mode=get",
                                                         type: "POST",
@@ -708,7 +708,6 @@ if (isset($_GET['kime'])) { ?>
                                                                     chatHistory.scrollTop = chatHistory.scrollHeight;
                                                                 }
                                                             }
-
                                                             oncekiMesajSayisi = yeniMesajSayisi;
                                                         },
                                                     });
@@ -720,11 +719,11 @@ if (isset($_GET['kime'])) { ?>
                                                     talep_id = $("input[name='talep_id']").val();
 
                                                     // Başlatıldığında hemen bir defa veri çek
-                                                    veriCek();
+                                                    mesajCek();
 
                                                     if (!intervalBasladi) {
                                                         setInterval(function () {
-                                                            veriCek();
+                                                            mesajCek();
                                                         }, 1000);
                                                         intervalBasladi = true;
                                                     }

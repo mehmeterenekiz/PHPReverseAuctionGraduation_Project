@@ -133,7 +133,7 @@ $talepsor->execute();
                             class="btn btn-primary btn-xs">Düzenle</button></a></center>
                     </td>
                     <td>
-                      <center><a onclick=" return confirm('Bu ürünü silmek istediğinizden emin misiniz?')"
+                      <center><a onclick="return confirm('Bu ürünü silmek istediğinizden emin misiniz?')"
                           href="../netting/islem.php?talep_id=<?php echo $talepcek['talep_id']; ?>&talep_sil=ok"><button
                             class="btn btn-danger btn-xs">Sil</button></a></center>
                     </td>

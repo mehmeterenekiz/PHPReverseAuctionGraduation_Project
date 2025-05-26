@@ -12,6 +12,9 @@
                         </button>
                     </span>
                 </div>
+                <?php if(isset($_SESSION['csrf_token'])) {?>
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                <?php } ?>
             </form>
         </div>
     </div>

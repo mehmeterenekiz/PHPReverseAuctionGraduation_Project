@@ -18,7 +18,7 @@ $hakkimizdacek = $hakkimizdasor->fetch(PDO::FETCH_ASSOC);
     <div class="container">
         <div class="pagination-wrapper">
             <ul>
-                <li><a href="index.php">Home</a><span> -</span></li>
+                <li><a href="index.php">Anasayfa</a><span> -</span></li>
                 <li>About US</li>
             </ul>
         </div>

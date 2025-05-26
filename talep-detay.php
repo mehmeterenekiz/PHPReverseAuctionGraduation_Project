@@ -8,7 +8,7 @@ if (isset($_SESSION['user_kullanici_mail'])) {
     require_once 'header.php';
 }
 $talep_id = $_GET['talep_id'];
-$talepsor = $db->prepare("SELECT * FROM talep inner join kategori on talep.kategori_id=kategori.kategori_id inner join kullanici on talep.kullanici_id=kullanici.kullanici_id inner join vasitamarka on talep.talep_marka = vasitamarka.marka_id where talep_id=:talep_id and talep_durum=:talep_durum");
+$talepsor = $db->prepare("SELECT *, kategori.kategori_id AS kategori_id_kategori FROM talep inner join kategori on talep.kategori_id=kategori.kategori_id inner join kullanici on talep.kullanici_id=kullanici.kullanici_id inner join vasitamarka on talep.talep_marka = vasitamarka.marka_id where talep_id=:talep_id and talep_durum=:talep_durum");
 $talepsor->execute(array(
     'talep_id' => $talep_id,
     'talep_durum' => 1
@@ -84,9 +84,13 @@ $talepcek = $talepsor->fetch(PDO::FETCH_ASSOC);
             <ul>
                 <li><a href="index.php">anasayfa</a><span> -</span></li>
                 <li><a
-                        href="kategori-<?= seo($talepcek['kategori_ad']) . "-" . $talepcek['kategori_id'] ?>"><?php echo $talepcek['kategori_ad'] ?></a><span>
-                        -</span></li>
-                <li> <?php echo $talepcek['marka_ad'] ?> </li>
+                        href="kategori-<?= seo($talepcek['kategori_ad']) . "-" . $talepcek['kategori_id_kategori'] ?>"><?php echo $talepcek['kategori_ad'] ?></a><span></span>
+                </li>
+
+                <?php if ($talepcek['kategori_id'] == 14) { ?>
+                    <li> - <?php echo $talepcek['marka_ad'] ?> </li>
+                <?php } ?>
+
             </ul>
             <br>
             <ul class="sidebar-item-title">
@@ -142,11 +146,32 @@ $talepcek = $talepsor->fetch(PDO::FETCH_ASSOC);
 
                                 <?php } else { ?>
 
-                                    <li> <a href="#" class="add-to-cart-btn" id="cart-button"><i class="fa fa-shopping-cart"
+                                    <?php if ($kullanicicek['kullanici_teklif_alma_verme'] == 0 || $kullanicicek['kullanici_teklif_alma_verme'] == 1) { ?>
+                                        <li> <a href="nedmin/netting/kullanici-islem?kullanici_aktif_degil=ok" class="add-to-cart-btn"><i class="fa fa-shopping-cart"
                                                 aria-hidden="true"></i> Teklif Ver </a></li>
+                                    <?php } else { ?>
+                                        <li> <a href="#" class="add-to-cart-btn" id="cart-button"><i class="fa fa-shopping-cart"
+                                                aria-hidden="true"></i> Teklif Ver </a></li>
+                                    <?php } ?>
 
-                                    <li><a href="#" class="add-to-favourites-btn" id="favourites-button"><i
-                                                class="fa fa-heart-o" aria-hidden="true"></i> Favorilerime Ekle</a></li>
+                                    <?php
+                                    // favori var mı kontrolü
+                                    $favori_sor = $db->prepare("SELECT * FROM favori WHERE talep_id=:talep_id AND kullanici_id=:kullanici_id");
+                                    $favori_sor->execute([
+                                        'talep_id' => $talepcek['talep_id'],
+                                        'kullanici_id' => $_SESSION['user_kullanici_mail']
+                                    ]);
+
+                                    $favori_var = $favori_sor->rowCount() > 0;
+                                    ?>
+
+                                    <li>
+                                        <a href="#" onclick="toggleFavourite(this)" data-talep-id="<?= $talepcek['talep_id'] ?>"
+                                            class="add-to-favourites-btn">
+                                            <i class="fa <?php echo $favori_var ? 'fa-heart' : 'fa-heart-o' ?>"
+                                                aria-hidden="true"></i> Favorilerime Ekle
+                                        </a>
+                                    </li>
 
                                 <?php } ?>
 
@@ -159,11 +184,41 @@ $talepcek = $talepsor->fetch(PDO::FETCH_ASSOC);
                                 <li> <a href="sign-in.php?sign-in=talep-<?= seo($talepcek['talep_ad']) . "-" . $talepcek['talep_id'] ?>"
                                         class="add-to-favourites-btn" id="favourites-button"><i class="fa fa-heart-o"
                                             aria-hidden="true"></i> Favorilerime Ekle</a> </li>
-
                             <?php } ?>
-
-
                         </ul>
+
+                        <script>
+                            function toggleFavourite(a) {
+                                event.preventDefault();
+                                const icon = $(a).find("i");
+                                const talep_id = $(a).data("talep-id");
+
+                                // Kalp ikonuna göre işlem seçimi
+                                const isFavorite = icon.hasClass("fa-heart"); // Dolu kalp var mı?
+                                const mode = isFavorite ? "delete" : "insert";
+
+                                $.ajax({
+                                    url: "../../nedmin/netting/favori-sil-api.php?mode=" + mode,
+                                    type: "POST",
+                                    data: { talep_id },
+                                    success: function (result) {
+                                        if (result === "ok") {
+                                            // İkonu güncelle
+                                            if (mode === "insert") {
+                                                icon.removeClass("fa-heart-o").addClass("fa-heart");
+                                            } else {
+                                                icon.removeClass("fa-heart").addClass("fa-heart-o");
+                                            }
+                                        } else {
+                                            console.log("İşlem başarısız:", result);
+                                        }
+                                    },
+                                    error: function (xhr, status, error) {
+                                        console.error("AJAX Hatası:", error);
+                                    }
+                                });
+                            }
+                        </script>
 
                         <ul class="social-default" hidden>
                             <li><a href="#"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
@@ -273,7 +328,7 @@ $talepcek = $talepsor->fetch(PDO::FETCH_ASSOC);
                     -->
                 </div>
             </div>
-            
+
 
 
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" style="margin-right: -4rem;">
@@ -297,42 +352,78 @@ $talepcek = $talepsor->fetch(PDO::FETCH_ASSOC);
                     <div class="sidebar-item">
                         <div class="sidebar-item-inner">
                             <ul class="sidebar-product-info">
+                                <?php if ($talepcek['kategori_id_kategori'] == 15) { ?>
 
-                                <li>Talep Tarihi <span>
-                                        <?php
-                                        $aylar = [
-                                            "January" => "Ocak",
-                                            "February" => "Şubat",
-                                            "March" => "Mart",
-                                            "April" => "Nisan",
-                                            "May" => "Mayıs",
-                                            "June" => "Haziran",
-                                            "July" => "Temmuz",
-                                            "August" => "Ağustos",
-                                            "September" => "Eylül",
-                                            "October" => "Ekim",
-                                            "November" => "Kasım",
-                                            "December" => "Aralık"
-                                        ];
+                                    <li>Talep Tarihi <span>
+                                            <?php
+                                            $aylar = [
+                                                "January" => "Ocak",
+                                                "February" => "Şubat",
+                                                "March" => "Mart",
+                                                "April" => "Nisan",
+                                                "May" => "Mayıs",
+                                                "June" => "Haziran",
+                                                "July" => "Temmuz",
+                                                "August" => "Ağustos",
+                                                "September" => "Eylül",
+                                                "October" => "Ekim",
+                                                "November" => "Kasım",
+                                                "December" => "Aralık"
+                                            ];
 
-                                        $tarih = date('d F Y', strtotime($talepcek['talep_zaman']));
-                                        foreach ($aylar as $en => $tr) {
-                                            $tarih = str_replace($en, $tr, $tarih);
-                                        }
-                                        echo $tarih;
-                                        ?>
-                                    </span></li>
+                                            $tarih = date('d F Y', strtotime($talepcek['talep_zaman']));
+                                            foreach ($aylar as $en => $tr) {
+                                                $tarih = str_replace($en, $tr, $tarih);
+                                            }
+                                            echo $tarih;
+                                            ?>
+                                        </span></li>
 
-                                <li>marka <span> <?php echo $talepcek['marka_ad'] ?> </span></li>
-                                <li>yıl <span>
-                                        <?php echo $talepcek['talep_min_yil'] . "-" . $talepcek['talep_max_yil'] ?>
-                                    </span></li>
-                                <li>yakıt <span> <?php echo $talepcek['talep_yakit_tipi'] ?> </span></li>
-                                <li>vites <span> <?php echo $talepcek['talep_vites_tipi'] ?> </span></li>
-                                <li>KM <span> <?php echo $talepcek['talep_min_km'] . "-" . $talepcek['talep_max_km'] ?>
-                                    </span></li>
-                                <li>kasa tipi <span> <?php echo $talepcek['talep_kasa_tipi'] ?> </span></li>
-                                <li>kapı sayısı <span> <?php echo $talepcek['talep_kapi_sayisi'] ?> </span></li>
+                                    <li>yıl <span>
+                                            <?php echo $talepcek['talep_min_yil'] . "-" . $talepcek['talep_max_yil'] ?>
+                                        </span></li>
+
+                                <?php } else { ?>
+
+                                    <li>Talep Tarihi <span>
+                                            <?php
+                                            $aylar = [
+                                                "January" => "Ocak",
+                                                "February" => "Şubat",
+                                                "March" => "Mart",
+                                                "April" => "Nisan",
+                                                "May" => "Mayıs",
+                                                "June" => "Haziran",
+                                                "July" => "Temmuz",
+                                                "August" => "Ağustos",
+                                                "September" => "Eylül",
+                                                "October" => "Ekim",
+                                                "November" => "Kasım",
+                                                "December" => "Aralık"
+                                            ];
+
+                                            $tarih = date('d F Y', strtotime($talepcek['talep_zaman']));
+                                            foreach ($aylar as $en => $tr) {
+                                                $tarih = str_replace($en, $tr, $tarih);
+                                            }
+                                            echo $tarih;
+                                            ?>
+                                        </span></li>
+
+                                    <li>marka <span> <?php echo $talepcek['marka_ad'] ?> </span></li>
+                                    <li>yıl <span>
+                                            <?php echo $talepcek['talep_min_yil'] . "-" . $talepcek['talep_max_yil'] ?>
+                                        </span></li>
+                                    <li>yakıt <span> <?php echo $talepcek['talep_yakit_tipi'] ?> </span></li>
+                                    <li>vites <span> <?php echo $talepcek['talep_vites_tipi'] ?> </span></li>
+                                    <li>KM <span> <?php echo $talepcek['talep_min_km'] . "-" . $talepcek['talep_max_km'] ?>
+                                        </span></li>
+                                    <li>kasa tipi <span> <?php echo $talepcek['talep_kasa_tipi'] ?> </span></li>
+                                    <li>kapı sayısı <span> <?php echo $talepcek['talep_kapi_sayisi'] ?> </span></li>
+
+                                <?php } ?>
+
+
                             </ul>
                         </div>
                     </div>
@@ -456,6 +547,7 @@ $talepcek = $talepsor->fetch(PDO::FETCH_ASSOC);
                         value="<?php echo $talepcek['talep_cember_yaricap'] ?>">
                     <input type="text" hidden name="teklif_konum_enlem" id="enlem">
                     <input type="text" hidden name="teklif_konum_boylam" id="boylam">
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 </form>
             </div>
         </div>

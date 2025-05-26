@@ -6,6 +6,19 @@ ob_start();
 session_start();
 require_once "header_user.php";
 
+$user_kullanici_id = $_SESSION['user_kullanici_mail'];
+$kontrol_aktiflik = $db->prepare("SELECT * FROM kullanici WHERE kullanici_id=:user_kullanici_id");
+$kontrol_aktiflik->execute(array(
+    'user_kullanici_id' => $user_kullanici_id
+));
+
+$kontrolaktiflikcek = $kontrol_aktiflik->fetch(PDO::FETCH_ASSOC);
+
+if ($kontrolaktiflikcek['kullanici_teklif_alma_verme'] == 0 || $kontrolaktiflikcek['kullanici_teklif_alma_verme'] == 1) {
+    header("location: ../../teklif-al-ver-basvuru?durum=aktifdegil");
+    exit;
+}
+
 ?>
 
 <?php require_once "arama-cubuk.php"; ?>
@@ -142,7 +155,7 @@ require_once "header_user.php";
     <div class="container">
         <div class="pagination-wrapper">
             <ul>
-                <li><a href="index.php">Home</a><span> -</span></li>
+                <li><a href="index.php">Anasayfa</a><span> -</span></li>
                 <li>Hesabım</li>
             </ul>
         </div>

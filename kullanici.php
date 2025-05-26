@@ -14,7 +14,7 @@ require_once "header_user.php";
     <div class="container">
         <div class="pagination-wrapper">
             <ul>
-                <li><a href="index.php">Home</a><span> -</span></li>
+                <li><a href="index.php">Anasayfa</a><span> -</span></li>
                 <li>Hesabım</li>
             </ul>
         </div>
@@ -186,6 +186,7 @@ require_once "header_user.php";
                             </div>
                         </div>
                     </div>
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 </form>
             </div>
         </div>

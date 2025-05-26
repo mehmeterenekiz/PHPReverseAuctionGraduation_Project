@@ -117,7 +117,7 @@ islemkontroladmin();
 
                     <li style="margin-bottom: -0.6rem;"><a href="etkin-kullanicilar.php"><i class="bi bi-card-checklist" 
                 style="font-size: 18px; color: white; margin-right: 0.9rem; margin-left: -0.2rem; color: lawngreen; "></i>
-                   Etkin Kullanıcılar </a></li>
+                   Aktif Kullanıcılar </a></li>
 
                 <li style="margin-bottom: -0.6rem;"><a href="kullanici-onay.php"><i class="bi bi-card-list" 
                 style="font-size: 18px; color: white; margin-right: 0.9rem; margin-left: -0.2rem; color: dodgerblue; "></i>

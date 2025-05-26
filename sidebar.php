@@ -1,35 +1,39 @@
 <style>
-.fox-sidebar {
-    margin-top: -2.4rem;
-    margin-left: -0.2rem !important;
-    max-height: 385px;
-    max-width: 240px;
-    overflow-y: auto;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    scrollbar-width: thin;         /* Firefox için */
-    scrollbar-color: #ccc transparent;  /* Firefox için */
-    border: 1px solid #dfdfdf;
-}
+    .fox-sidebar {
+        margin-top: -2.4rem;
+        margin-left: -0.2rem !important;
+        max-height: 385px;
+        max-width: 240px;
+        overflow-y: auto;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        scrollbar-width: thin;
+        /* Firefox için */
+        scrollbar-color: #ccc transparent;
+        /* Firefox için */
+        border: 1px solid #dfdfdf;
+    }
 
-.fox-sidebar::-webkit-scrollbar {
-    width: 20px;
-    margin-left: 10px; 
-}
+    .fox-sidebar::-webkit-scrollbar {
+        width: 20px;
+        margin-left: 10px;
+    }
 
-.fox-sidebar::-webkit-scrollbar-track {
-    background: transparent;
-}
-.fox-sidebar::-webkit-scrollbar-button {
-    height: 0;
-    width: 0;
-    background: none;
-}
-.fox-sidebar::-webkit-scrollbar-thumb {
-    background-color: #ccc;
-    border-radius: 10px;
-    border: 2px solid transparent;
-}
+    .fox-sidebar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .fox-sidebar::-webkit-scrollbar-button {
+        height: 0;
+        width: 0;
+        background: none;
+    }
+
+    .fox-sidebar::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 10px;
+        border: 2px solid transparent;
+    }
 </style>
 
 <div class="fox-sidebar" style="margin-left: -2.2rem;">
@@ -47,10 +51,24 @@
                     ));
                     $kategoricek = $kategorisor->fetch(PDO::FETCH_ASSOC)
                         ?>
-                    <?php echo $kategoricek['kategori_ad'] ?>
-                <?php } else { ?>
+                    <?php echo $kategoricek['kategori_ad'];
 
-                    kategoriler
+                } else if (isset($_GET['marka_id'])) { ?>
+                        <?php
+
+                        $marka_id = $_GET['marka_id'];
+                        $kategorisor = $db->prepare("SELECT * FROM vasitamarka inner join kategori on vasitamarka.kategori_id = kategori.kategori_id where marka_id=:marka_id");
+                        $kategorisor->execute(array(
+                            'marka_id' => $marka_id,
+                        ));
+                        $kategoricek = $kategorisor->fetch(PDO::FETCH_ASSOC)
+                            ?>
+                    <?php echo $kategoricek['kategori_ad'];
+
+
+                } else { ?>
+
+                        kategoriler
 
                 <?php } ?>
             </h3>
@@ -73,6 +91,30 @@
 
                                 <?php
                                 $marka_id = $markacek['marka_id'];
+                                $talepsay = $db->prepare("SELECT count(talep_marka) as talepsayisi FROM talep where talep_marka=:marka_id and talep_durum=:talep_durum and kategori_id=:kategori_id");
+                                $talepsay->execute(array(
+                                    'marka_id' => $marka_id,
+                                    'talep_durum' => 1,
+                                    'kategori_id' => 14
+                                ));
+                                $saycek = $talepsay->fetch(PDO::FETCH_ASSOC);
+
+                                echo "(" . $saycek['talepsayisi'] . ")";
+                                ?>
+
+                            </span>
+                        </li>
+
+                    <?php } ?>
+
+                <?php } else if (isset($_GET['marka_id'])) { ?>
+
+                        <li style="font-size: 1.35rem;"><a
+                                href="marka-<?= seo($markacek['marka_ad']) . "-" . $markacek['marka_id'] ?>"><?php echo $markacek['marka_ad'] ?></a>
+                            <span>
+
+                                <?php
+                                $marka_id = $markacek['marka_id'];
                                 $talepsay = $db->prepare("SELECT count(talep_marka) as talepsayisi FROM talep where talep_marka=:marka_id and talep_durum=:talep_durum");
                                 $talepsay->execute(array(
                                     'marka_id' => $marka_id,
@@ -86,38 +128,32 @@
                             </span>
                         </li>
 
-                    <?php } ?>
-
-                <?php } else if (isset($_GET['marka_id'])) {  echo "naber"; ?>
-
-                    
-
                 <?php } else { ?>
-                    <?php
-                    $kategorisor = $db->prepare("SELECT * FROM kategori where kategori_durum=:kategori_durum order by kategori_sira");
-                    $kategorisor->execute(array(
-                        'kategori_durum' => 1   // kategori onay durumu geliyor.
-                    ));
-                    while ($kategoricek = $kategorisor->fetch(PDO::FETCH_ASSOC)) { ?>
+                        <?php
+                        $kategorisor = $db->prepare("SELECT * FROM kategori where kategori_durum=:kategori_durum order by kategori_sira");
+                        $kategorisor->execute(array(
+                            'kategori_durum' => 1   // kategori onay durumu geliyor.
+                        ));
+                        while ($kategoricek = $kategorisor->fetch(PDO::FETCH_ASSOC)) { ?>
 
-                        <li><a
-                                href="kategori-<?= seo($kategoricek['kategori_ad']) . "-" . $kategoricek['kategori_id'] ?>"><?php echo $kategoricek['kategori_ad'] ?></a>
-                            <span>
+                            <li><a
+                                    href="kategori-<?= seo($kategoricek['kategori_ad']) . "-" . $kategoricek['kategori_id'] ?>"><?php echo $kategoricek['kategori_ad'] ?></a>
+                                <span>
 
-                                <?php
-                                $kategori_id = $kategoricek['kategori_id'];
-                                $talepsay = $db->prepare("SELECT count(kategori_id) as talepsayisi FROM talep where kategori_id=:kategori_id and talep_durum=:talep_durum");
-                                $talepsay->execute(array(
-                                    'kategori_id' => $kategori_id,
-                                    'talep_durum' => 1
-                                ));
-                                $saycek = $talepsay->fetch(PDO::FETCH_ASSOC);
+                                    <?php
+                                    $kategori_id = $kategoricek['kategori_id'];
+                                    $talepsay = $db->prepare("SELECT count(kategori_id) as talepsayisi FROM talep where kategori_id=:kategori_id and talep_durum=:talep_durum");
+                                    $talepsay->execute(array(
+                                        'kategori_id' => $kategori_id,
+                                        'talep_durum' => 1
+                                    ));
+                                    $saycek = $talepsay->fetch(PDO::FETCH_ASSOC);
 
-                                echo "(" . $saycek['talepsayisi'] . ")";
-                                ?>
+                                    echo "(" . $saycek['talepsayisi'] . ")";
+                                    ?>
 
-                            </span>
-                        </li>
+                                </span>
+                            </li>
 
                     <?php } ?>
                 <?php } ?>

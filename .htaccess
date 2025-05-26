@@ -17,7 +17,8 @@ RewriteRule ^(.*)$ $1.php
 
 RewriteRule ^sayfa-([0-9a-zA-Z-_]+)  menu-detay.php?sef=$1 [L,QSA]
 RewriteRule ^kategori-([0-9a-zA-Z-_]+)-([0-9]+)$  kategori.php?sef=$1&kategori_id=$2 [L,QSA]
-RewriteRule ^marka-([0-9a-zA-Z-_]+)-([0-9]+)$  marka.php?sef=$1&kategori_id=$2 [L,QSA]
+RewriteRule ^kategori-([0-9a-zA-Z-_]+)-([0-9]+)$  ilan-filtre-api.php?sef=$1&kategori_id=$2 [L,QSA]
+RewriteRule ^marka-([0-9a-zA-Z-_]+)-([0-9]+)$  marka.php?sef=$1&marka_id=$2 [L,QSA]
 RewriteRule ^talep-([0-9a-zA-Z-_]+)-([0-9]+)$  talep-detay.php?sef=$1&talep_id=$2 [L,QSA]
 
 

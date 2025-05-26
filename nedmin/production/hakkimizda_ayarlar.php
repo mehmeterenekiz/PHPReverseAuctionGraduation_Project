@@ -51,6 +51,30 @@ $hakkimizdacek = $hakkimizdasor->fetch(PDO::FETCH_ASSOC);
                                 </div>
                             </div>
 
+                            
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Tanıtım Videosu Başlık<span
+                                        class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="text" id="first-name" name="hakkimizda_video_baslik"
+                                        value="<?php echo $hakkimizdacek['hakkimizda_video_baslik'] ?>"
+                                        class="form-control col-md-7 col-xs-12">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Tanıtım Videosu<span
+                                        class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="text" id="first-name" required="required" name="hakkimizda_video"
+                                        value="<?php echo $hakkimizdacek['hakkimizda_video'] ?>"
+                                        class="form-control col-md-7 col-xs-12">
+                                </div>
+                            </div>
+
                             <div class="form-group">
                                 <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">İçerik Başlık<span
                                         class="required">*</span>
@@ -93,28 +117,6 @@ $hakkimizdacek = $hakkimizdasor->fetch(PDO::FETCH_ASSOC);
                                 );
                             </script>
                             <!-- Ck Editör Bitiş -->
-
-                            <div class="form-group">
-                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Tanıtım Videosu Başlık<span
-                                        class="required">*</span>
-                                </label>
-                                <div class="col-md-6 col-sm-6 col-xs-12">
-                                    <input type="text" id="first-name" name="hakkimizda_video_baslik"
-                                        value="<?php echo $hakkimizdacek['hakkimizda_video_baslik'] ?>"
-                                        class="form-control col-md-7 col-xs-12">
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Tanıtım Videosu<span
-                                        class="required">*</span>
-                                </label>
-                                <div class="col-md-6 col-sm-6 col-xs-12">
-                                    <input type="text" id="first-name" required="required" name="hakkimizda_video"
-                                        value="<?php echo $hakkimizdacek['hakkimizda_video'] ?>"
-                                        class="form-control col-md-7 col-xs-12">
-                                </div>
-                            </div>
 
                             <div class="form-group">
                                 <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Vizyon Başlık<span

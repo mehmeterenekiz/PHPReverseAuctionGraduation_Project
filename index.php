@@ -8,7 +8,7 @@ if (isset($_SESSION['user_kullanici_mail'])) {
     require_once 'header.php';
 }
 
-$talepsor = $db->prepare("SELECT * FROM talep inner join vasitamarka on talep.talep_marka = vasitamarka.marka_id where talep_durum=:talep_durum order by talep_one_cikar desc, talep_zaman desc limit 40");
+$talepsor = $db->prepare("SELECT *, talep.kategori_id as talep_kategori FROM talep inner join vasitamarka on talep.talep_marka = vasitamarka.marka_id where talep_durum=:talep_durum order by talep_one_cikar desc, talep_zaman desc limit 40");
 $talepsor->execute(array(
     'talep_durum' => 1   // talep onay durumu geliyor.
 ));
@@ -121,6 +121,9 @@ $talepsor->execute(array(
                         </button>
                     </span>
                 </div>
+                <?php if(isset($_SESSION['csrf_token'])) {?>
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                <?php } ?>
             </form>
         </div>
     </div>
@@ -174,15 +177,22 @@ $talepsor->execute(array(
                                                             <h5>
                                                                 <?php
                                                                 $ad = turkce_title_case($talepcek['talep_ad']); // önce baş harfleri büyüt
-                                                                echo mb_strlen($ad, 'UTF-8') > 26 ? mb_substr($ad, 0, 26, 'UTF-8') . '...' : $ad;
+                                                                echo mb_strlen($ad, 'UTF-8') > 24 ? mb_substr($ad, 0, 24, 'UTF-8') . '...' : $ad;
                                                                 ?>
                                                             </h5>
 
-                                                            <span> <?php echo $talepcek['marka_ad'] ?> </span>
+                                                            <?php if($talepcek['talep_kategori']==14) { ?>
+
+                                                                <span> <?php echo $talepcek['marka_ad'] . " -"  ?> </span>
+                                                            
+                                                            <?php } else{ ?>
+
+
+                                                            <?php } ?>
                                                             <span style="text-transform: none;">
                                                                 <?php
                                                                 $sehir = turkce_title_case($talepcek['talep_sehir']);
-                                                                echo "- " . (mb_strlen($sehir, 'UTF-8') > 10 ? mb_substr($sehir, 0, 10, 'UTF-8') . '...' : $sehir);
+                                                                echo "" . (mb_strlen($sehir, 'UTF-8') > 10 ? mb_substr($sehir, 0, 10, 'UTF-8') . '...' : $sehir);
                                                                 ?>
                                                             </span>
                                                             <div class="price">

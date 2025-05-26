@@ -706,7 +706,7 @@ input::placeholder {
 }
 
 .container_new button{
-  background-color: #512da8;
+  background-color: #2553a1;
   color: #fff;
   font-size: 12px;
   padding: 10px 45px;
@@ -851,9 +851,9 @@ input::placeholder {
 }
 
 .toggle_new{
-  background-color: #512da8;
+  background-color: #2553a1;
   height: 100%;
-  background: linear-gradient(to right, #5c6bc0, #512da8);
+  background: linear-gradient(to right, #5c6bc0, #2553a1);
   color: #fff;
   position: relative;
   left: -100%;
@@ -940,7 +940,7 @@ input::placeholder {
 }
 
 .toggle-password:hover i {
-  color: #512da8;
+  color: #2553a1;
   transition: 0.3s ease;
 }
 
@@ -1020,7 +1020,7 @@ input::placeholder {
   cursor: pointer;
   min-width: 150px;
   text-align: left;
-  font-size: 12.5px;
+  font-size: 12px;
 }
 .dropdown-sorting-content {
   display: none;
@@ -1037,7 +1037,7 @@ input::placeholder {
 }
 .dropdown-sorting-content div {
   padding: 6px 12px; /* Daha dar padding */
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
   line-height: 1.6; /* Satır aralığı daraltıldı */
   border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* Silik (soluk) çizgi */
@@ -1054,6 +1054,11 @@ input::placeholder {
   padding-top: 0.3rem;
   font-size: 1rem;
 }
+/* Aktif öğe için stil */
+.dropdown-sorting-content div.active {
+  background-color: #f1f1f1; 
+}
+
 .show {
   display: block !important;
 }
@@ -1891,12 +1896,12 @@ ul {
   text-align: center;
   color: #ffffff;
   padding: 10px 30px 11px;
-  background: #8bc34a;
+  background: #0056b3;
   text-transform: capitalize;
   font-size: 15px;
   font-weight: 500;
   display: inline-block;
-  border: 2px solid #8bc34a;
+  border: 2px solid #0056b3;
   -webkit-transition: all 0.3s ease-out;
   -moz-transition: all 0.3s ease-out;
   -ms-transition: all 0.3s ease-out;
@@ -1905,7 +1910,7 @@ ul {
 }
 .update-btn:hover {
   background: transparent;
-  color: #8bc34a;
+  color: #0056b3;
 }
 .find-btn {
   display: ruby-text;
@@ -4588,7 +4593,7 @@ ul.profile-page li a::after {
   margin-right: 15px;
 }
 .layout-switcher ul > li:hover a i {
-  color: #8bc34a;
+  color: #2553a1;
 }
 .layout-switcher ul > li > a {
   padding: 10px 5px 6px;
@@ -4599,7 +4604,7 @@ ul.profile-page li a::after {
   font-size: 16px;
 }
 .layout-switcher ul > .active i {
-  color: #8bc34a;
+  color: #2553a1;
 }
 .page-controls-sorting .dropdown .dropdown-menu {
   display: inherit;
@@ -5423,6 +5428,7 @@ ul.profile-page li a::after {
 .inner-page-main-body {
   width: 105%;
   margin-left: -4%;
+  min-height: 60rem !important;
 }
 .product-width{
   width: 100% !important;

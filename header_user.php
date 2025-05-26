@@ -16,8 +16,11 @@ $kullanicisor->execute(array(
 ));
 
 $kullanicicek = $kullanicisor->fetch(PDO::FETCH_ASSOC);
-?>
 
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+?>
 <!doctype html>
 <html class="no-js" lang="">
 
@@ -138,7 +141,7 @@ $kullanicicek = $kullanicisor->fetch(PDO::FETCH_ASSOC);
         </nav>
         <div class="buttons">
             <button id="favori">
-                <a href="favoriler"><i class="fa-regular fa-heart"></i> </a>
+                <a href="favorilerim"><i class="fa-regular fa-heart"></i> </a>
             </button>
 
             <?php
@@ -321,7 +324,7 @@ $kullanicicek = $kullanicisor->fetch(PDO::FETCH_ASSOC);
                             <?php echo $kullanicicek["kullanici_ad"] . " " . $kullanicicek["kullanici_soyad"]; ?>
                         </span>
                         <li style="margin-top:-1rem;"><a href="mesajlarim">Mesajlarım</a></li>
-                        <li><a href="#">Favorilerim</a></li>
+                        <li><a href="favorilerim">Favorilerim</a></li>
                         <li><a href="
                         <?php if ($kullanicicek["kullanici_teklif_alma_verme"] == 2) {
                             echo "kullanici";

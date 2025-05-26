@@ -523,8 +523,8 @@ if (isset($_POST['talep_duzenle'])) {
     }
 }
 
-if (isset($_POST['talep_sil']) and $_GET['talep_sil'] == "ok") {
-
+if (isset($_GET['talep_sil']) and $_GET['talep_sil'] == "ok") {
+    
     $sil = $db->prepare("DELETE from talep where talep_id=:talep_id");
     $kontrol = $sil->execute(array(
         'talep_id' => $_GET['talep_id']
@@ -533,10 +533,11 @@ if (isset($_POST['talep_sil']) and $_GET['talep_sil'] == "ok") {
     if ($kontrol) {
 
         Header("Location:../production/talepler.php?durum=ok");
-
+        exit;
     } else {
 
         Header("Location:../production/talepler.php?durum=no");
+        exit;
     }
 
 }

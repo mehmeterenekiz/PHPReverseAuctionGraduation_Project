@@ -20,7 +20,7 @@ $kullanicicek = $kullanicisor->fetch(PDO::FETCH_ASSOC);
     <div class="container">
         <div class="pagination-wrapper">
             <ul>
-                <li><a href="index.php">Home</a><span> -</span></li>
+                <li><a href="index.php">Anasayfa</a><span> -</span></li>
                 <li>Hesabım</li>
             </ul>
         </div>
@@ -102,6 +102,15 @@ $kullanicicek = $kullanicisor->fetch(PDO::FETCH_ASSOC);
                                 </div>
                             <?php } ?>
 
+                            <?php if (isset($_GET['durum']) && (str_contains($_GET['durum'], "karakter") || str_contains($_GET['durum'], "buyukharf"))) { ?>
+                                <div class="alert-box"
+                                    style="max-width: 35%; height: 3.8rem !important; position:absolute; margin-top: -5.25rem !important; margin-left:25rem !important;">
+                                    <span class="icon"><i class="bi bi-exclamation-circle"></i></span>
+                                    <span style="text-transform:none;" class="font-opacity">Şifreniz 10 ile 64 karakter
+                                        arasında olmalıdır.</span>
+                                </div>
+                            <?php } ?>
+
                             <div class="personal-info inner-page-padding">
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label">Eski Şifre</label>
@@ -137,6 +146,30 @@ $kullanicicek = $kullanicisor->fetch(PDO::FETCH_ASSOC);
                                         <i class="bi bi-eye"></i>
                                     </button>
                                 </div>
+
+                                <style>
+                                    span strong {
+                                        text-transform: none;
+                                    }
+                                </style>
+
+                                <?php
+                                    // Duruma göre CSS sınıfı belirleyin
+                                    $EksikKarakterDurumu = (isset($_GET['durum']) && str_contains($_GET['durum'], "karakter")) ? 'alert-color' : '';
+                                    $EksikBuyukHarfDurumu = (isset($_GET['durum']) && str_contains($_GET['durum'], "buyukharf")) ? 'alert-color' : '';
+                                    $EksikKucukHarfDurumu = (isset($_GET['durum']) && str_contains($_GET['durum'], "kucukharf")) ? 'alert-color' : '';
+                                    $EksikRakamDurumu = (isset($_GET['durum']) && str_contains($_GET['durum'], "rakam")) ? 'alert-color' : '';
+                                ?>
+
+                                <span
+                                    style="margin-top: -1rem; text-align: left !important; font-size: 1.3rem; text-transform: none;">Şifreniz
+                                    <strong class="<?php echo $EksikKarakterDurumu; ?>"> en az 10 karakter </strong>
+                                    olmalı.
+                                    <strong class="<?php echo $EksikBuyukHarfDurumu; ?>"> 1 büyük harf,</strong> <strong
+                                        class="<?php echo $EksikKucukHarfDurumu; ?>"> 1 küçük harf </strong> ve <br>
+                                    <strong class="<?php echo $EksikRakamDurumu; ?>"> rakam </strong> içermelidir.
+                                </span>
+
                                 <div class="form-group">
                                     <div class="col-sm-12" style="text-align: right;">
                                         <button type="submit" name="kullanici_sifre_duzenle" class="update-btn"
@@ -148,6 +181,7 @@ $kullanicicek = $kullanicisor->fetch(PDO::FETCH_ASSOC);
                             </div>
                         </div>
                     </div>
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 </form>
             </div>
         </div>
@@ -155,3 +189,25 @@ $kullanicicek = $kullanicisor->fetch(PDO::FETCH_ASSOC);
 </div>
 <!-- Settings Page End Here -->
 <?php require_once 'footer.php'; ?>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const togglePasswordButtons = document.querySelectorAll('.toggle-password'); /* sign in ve sign up password js*/
+
+        togglePasswordButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                // Şifre alanını bul
+                const passwordField = this.previousElementSibling.firstElementChild;
+
+                if (passwordField) {
+                    // Şifre alanının tipini değiştir
+                    const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordField.setAttribute('type', type);
+
+                    // İkonu değiştir
+                    this.innerHTML = type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash-fill"></i>';
+                }
+            });
+        });
+    });
+</script>

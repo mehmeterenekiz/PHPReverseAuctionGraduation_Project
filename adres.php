@@ -25,7 +25,7 @@ $kullanicifirmacek=$kullanicifirmasor->fetch(PDO::FETCH_ASSOC);
     <div class="container">
         <div class="pagination-wrapper">
             <ul>
-                <li><a href="index.php">Home</a><span> -</span></li>
+                <li><a href="index.php">Anasayfa</a><span> -</span></li>
                 <li>Hesabım</li>
             </ul>
         </div>
@@ -188,7 +188,7 @@ $kullanicifirmacek=$kullanicifirmasor->fetch(PDO::FETCH_ASSOC);
                             </div>
                         </div>
                     </div>
-
+                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 </form>
             </div>
         </div>

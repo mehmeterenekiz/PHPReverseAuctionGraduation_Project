@@ -24,7 +24,7 @@ $kullanicifirmacek = $kullanicifirmasor->fetch(PDO::FETCH_ASSOC);
     <div class="container">
         <div class="pagination-wrapper">
             <ul>
-                <li><a href="index.php">Home</a><span> -</span></li>
+                <li><a href="index.php">Anasayfa</a><span> -</span></li>
                 <li>Hesabım</li>
             </ul>
         </div>
@@ -36,7 +36,7 @@ $kullanicifirmacek = $kullanicifirmasor->fetch(PDO::FETCH_ASSOC);
     <div class="container">
         <div class="row settings-wrapper">
 
-        <?php require_once "sidebar-user.php" ?>
+            <?php require_once "sidebar-user.php" ?>
 
             <div class="col-lg-9 col-md-9 col-sm-8 col-xs-12">
 
@@ -99,11 +99,15 @@ $kullanicifirmacek = $kullanicifirmasor->fetch(PDO::FETCH_ASSOC);
                                     </div>
 
                                     <div class="form-group">
-                                        <label class="col-sm-3 control-label">IBAN</label>
+                                        <label class="col-sm-3 control-label">IBAN <span id="iban-warning"
+                                                style="color: red; display: none; font-size: 1.3rem;">
+                                                <?php $uyari = 'iban eksik';
+                                                echo "(" . turkce_title_case($uyari) . ")"; ?>
+                                            </span> </label>
                                         <div class="col-sm-9">
-                                            <input class="form-control" required="" id="last-name" type="text"
-                                                name="banka_iban"
-                                                value="<?php echo $kullanicibankacek ? $kullanicibankacek['banka_iban'] : "" ?>">
+                                            <input class="form-control" id="iban-input" name="banka_iban" type="text"
+                                                minlength="15" placeholder="TR__ ____ ____ ____ ____ ____ __" value="TR"
+                                                required>
                                         </div>
                                     </div>
 
@@ -125,7 +129,7 @@ $kullanicifirmacek = $kullanicifirmasor->fetch(PDO::FETCH_ASSOC);
                                         <label class="col-sm-3 control-label">Soyad</label>
                                         <div class="col-sm-4" style="margin-left: -13.5rem;">
                                             <input class="form-control" required="" id="address1" type="text"
-                                             name="kullanici_soyad"
+                                                name="kullanici_soyad"
                                                 value="<?php echo $kullanicicek['kullanici_soyad'] ?>">
                                         </div>
                                     </div>
@@ -133,7 +137,7 @@ $kullanicifirmacek = $kullanicifirmasor->fetch(PDO::FETCH_ASSOC);
                                     <div class="date-picker">
                                         <label class="col-sm-3 control-label"
                                             style="margin-top: 1.8rem;">Bireysel/Kurumsal</label>
-                                        <div class="dropdown" required="" 
+                                        <div class="dropdown" required=""
                                             style="margin-left: 3.1rem !important; margin-top: 1.2rem;">
                                             <select name="kullanici_tip" id="kullanici_tip">
 
@@ -206,7 +210,7 @@ $kullanicifirmacek = $kullanicifirmasor->fetch(PDO::FETCH_ASSOC);
                                             </button>
                                         </div>
                                     </div>
-
+                                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                 </form>
                             <?php } else if ($kullanicicek["kullanici_teklif_alma_verme"] == 1) { ?>
 
@@ -310,4 +314,88 @@ $kullanicifirmacek = $kullanicifirmasor->fetch(PDO::FETCH_ASSOC);
         }
     });
 
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ibanInput = document.getElementById('iban-input');
+
+        ibanInput.addEventListener('input', function (e) {
+            let value = ibanInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+            // TR sabit olsun
+            if (!value.startsWith('TR')) {
+                value = 'TR' + value.replace(/^TR/, '');
+            }
+
+            // İlk 2 karakter (TR), sonraki 2 karakter (kontrol rakamları)
+            let prefix = 'TR';
+            let kontrol = value.substring(2, 4);
+            let numbers = value.substring(4).replace(/\D/g, '').substring(0, 22); // 24 - 2 = 22 karakter
+
+            // Format: TR + 2 kontrol + boşluk + 4'erli gruplar
+            let formatted = prefix + kontrol;
+
+            if (kontrol.length === 2) {
+                formatted += ' ';
+            }
+
+            for (let i = 0; i < numbers.length; i += 4) {
+                formatted += numbers.substring(i, i + 4) + ' ';
+            }
+
+            ibanInput.value = formatted.trim();
+        });
+
+
+        ibanInput.addEventListener('keydown', function (e) {
+            const pos = ibanInput.selectionStart;
+
+            // TR kısmını silmeye çalışma
+            if ((e.key === 'Backspace' || e.key === 'Delete') && pos <= 2) {
+                e.preventDefault();
+                return;
+            }
+
+            // TR'den sonraki kısımda sadece sayı girilsin
+            // TR kısmındaysa (0, 1, 2), engelleme yapma (TR zaten sabit)
+            if (pos >= 2) {
+                // Rakam değilse, engelle
+                if (!e.key.match(/^[0-9]$/) &&
+                    e.key !== 'Backspace' &&
+                    e.key !== 'Delete' &&
+                    e.key !== 'ArrowLeft' &&
+                    e.key !== 'ArrowRight' &&
+                    e.key !== 'Tab') {
+                    e.preventDefault();
+                }
+            }
+        });
+
+        // TR kısmına tıklayıp yazmaya çalışmasın
+        ibanInput.addEventListener('click', function (e) {
+            if (ibanInput.selectionStart < 3) {
+                ibanInput.setSelectionRange(ibanInput.value.length, ibanInput.value.length);
+            }
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('personal-info-form');
+        const ibanInput = document.getElementById('iban-input');
+        const warning = document.getElementById('iban-warning');
+
+        form.addEventListener('submit', function (e) {
+            const length = ibanInput.value.length;
+
+            if (length < 32) {
+                e.preventDefault(); // Formu gönderme
+                warning.style.display = 'inline';
+            } else {
+                warning.style.display = 'none';
+            }
+        });
+    });
 </script>

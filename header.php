@@ -3,12 +3,12 @@ require_once 'nedmin/netting/baglan.php';
 require_once 'nedmin/production/fonksiyon.php';
 require_once 'nedmin/netting/fonksiyonlar.php';
 
-
 $ayarsor = $db->prepare("select * from ayar where ayar_id=:id");
 $ayarsor->execute(array(
     "id" => 0,
 ));
 $ayarcek = $ayarsor->fetch(PDO::FETCH_ASSOC);
+
 ?>
 
 <!doctype html>

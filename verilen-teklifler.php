@@ -3,6 +3,20 @@ ob_start();
 session_start();
 $title = "Verilen Teklifler";
 require_once "header_user.php";
+
+$user_kullanici_id = $_SESSION['user_kullanici_mail'];
+$kontrol_aktiflik = $db->prepare("SELECT * FROM kullanici WHERE kullanici_id=:user_kullanici_id");
+$kontrol_aktiflik->execute(array(
+    'user_kullanici_id' => $user_kullanici_id
+));
+
+$kontrolaktiflikcek = $kontrol_aktiflik->fetch(PDO::FETCH_ASSOC);
+
+if ($kontrolaktiflikcek['kullanici_teklif_alma_verme'] == 0 || $kontrolaktiflikcek['kullanici_teklif_alma_verme'] == 1) {
+    header("location: ../../teklif-al-ver-basvuru?durum=aktifdegil");
+    exit;
+}
+
 ?>
 <style>
     .map {
@@ -73,7 +87,7 @@ require_once "header_user.php";
     <div class="container">
         <div class="pagination-wrapper">
             <ul>
-                <li><a href="index.php">Home</a><span> -</span></li>
+                <li><a href="index.php">Anasayfa</a><span> -</span></li>
                 <li>Hesabım</li>
             </ul>
         </div>
@@ -161,6 +175,18 @@ require_once "header_user.php";
                                 <span class="icon"><i class="bi bi-exclamation-circle"></i></span>
                                 <span style="text-transform:none;" class="font-opacity">Talepiniz Yayından
                                     Kaldırılamadı</span>
+                            </div>
+                        <?php } ?>
+
+                        <?php
+                        if (isset($_GET['durum']) and $_GET['durum'] == "guncellendi") { ?>
+                            <div class="alert-box-ok"
+                                style="max-width:32.5%; position:absolute; margin-top: -5.25rem !important; margin-left:27.6rem !important;">
+                                <svg style="margin-top:-0.2rem; padding-right: 0.4rem;" class="bi flex-shrink-0 me-2"
+                                    width="15" height="15" role="img" aria-label="Success:">
+                                    <use xlink:href="#check-circle-fill" />
+                                </svg>
+                                <span style="text-transform:none;" class="font-opacity">Vermiş olduğunuz teklifiniz güncellendi.</span>
                             </div>
                         <?php } ?>
 
@@ -433,7 +459,7 @@ require_once "header_user.php";
                                                 <?php
                                                 if ($teklifcek['teklif_onay_durum'] == 0 || $teklifcek['teklif_onay_durum'] == 1 || $teklifcek['teklif_onay_durum'] == 2) { ?>
 
-                                                    <a
+                                                    <a onclick="return confirm('Bu teklifi geri çekmek istediğinizden emin misiniz?')"
                                                         href="nedmin/netting/kullanici-islem?teklif_kaldir=ok&teklif_id=<?php echo $teklifcek['teklif_id'] ?>"><button
                                                             class="btn btn-danger btn-xs">Teklifi Geri Çek</button></a>
 
@@ -507,6 +533,7 @@ require_once "header_user.php";
                         <input type="text" hidden name="teklif_konum_boylam" id="boylam">
                         <input type="text" hidden name="teklif_onay_durum" id="teklif_onay_durum">
                         <input type="text" hidden id="teklif_fiyat_old" name="teklif_fiyat_old">
+                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                     </form>
                 </div>
             </div>
