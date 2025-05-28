@@ -9,6 +9,11 @@ $ayarsor->execute(array(
 ));
 $ayarcek = $ayarsor->fetch(PDO::FETCH_ASSOC);
 
+if($ayarcek['ayar_bakim'] == 1){
+    header("Location: bakimda.php");
+    exit;
+}
+
 ?>
 
 <!doctype html>

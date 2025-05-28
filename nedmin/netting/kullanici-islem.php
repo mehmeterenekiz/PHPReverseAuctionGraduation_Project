@@ -822,6 +822,27 @@ if (isset($_GET["talep_kaldır"]) && $_GET["talep_kaldır"] === "ok") {
     }
 }
 
+if (isset($_GET["talep_yayina_al"]) && $_GET["talep_yayina_al"] === "ok") {
+
+    $talep_id = $_GET["talep_id"];
+
+    $update_talep = $db->prepare("update talep set 
+        talep_durum=:talep_durum
+        where talep_id = $talep_id");
+
+    $updatetalep = $update_talep->execute(array(
+        "talep_durum" => 1,
+    ));
+
+    if ($updatetalep) {
+        header("location: ../../taleplerim.php?talep_yayina_al=ok");
+        exit;
+    } else {
+        header("location: ../../taleplerim.php?talep_yayina_al=no");
+        exit;
+    }
+}
+
 if (isset($_POST["teklif_ver"])) {
 
     if ($_POST['csrf_token'] !== $_SESSION['csrf_token']) {

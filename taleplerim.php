@@ -303,6 +303,9 @@ require_once "header_user.php";
                                                                     class="btn btn-danger btn-xs">Yayından Kaldırıldı</button>
                                                                 <p style="font-size: 12px;">Kullanıcı tarafından</p>
 
+                                                                <a
+                                                                    href="nedmin/netting/kullanici-islem?talep_yayina_al=ok&talep_id=<?php echo $talepcek['talep_id'] ?>"><button
+                                                                        class="btn btn-primary btn-xs">Yayına al</button></a>
 
                                                     <?php } else if ($talepcek['talep_durum'] == 3) { ?>
 

@@ -15,6 +15,10 @@ $kullanicisor->execute(array(
     'kullanici_mail' => $_SESSION['user_kullanici_mail']
 ));
 
+if($ayarcek['ayar_bakim'] == 1){
+    header("localhost: ../../bakimda.php");
+}
+
 $kullanicicek = $kullanicisor->fetch(PDO::FETCH_ASSOC);
 
 if (empty($_SESSION['csrf_token'])) {

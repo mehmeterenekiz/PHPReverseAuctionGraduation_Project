@@ -152,7 +152,7 @@
 <script src="js/main.js" type="text/javascript"></script>
 
 <!-- Google Maps Api -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCiaioI2CRwNL3klHmv1C10qDgYJmpDsn4    "></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=<?php echo $ayarcek['ayar_maps'];?>"></script>
 
 <script src="/my_js/sign-up.js"> </script>
 <script src="/my_js/header.js"> </script>

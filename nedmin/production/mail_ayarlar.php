@@ -5,7 +5,7 @@ require_once '../netting/baglan.php';
 //belirli veriyi çekme işlemi
 $ayarsor = $db->prepare("select * from ayar where ayar_id=:id");
 $ayarsor->execute(array(
-  "id" => 0,
+    "id" => 0,
 ));
 $ayarcek = $ayarsor->fetch(PDO::FETCH_ASSOC);
 ?>
@@ -40,7 +40,8 @@ $ayarcek = $ayarsor->fetch(PDO::FETCH_ASSOC);
                             class="form-horizontal form-label-left">
 
                             <div class="form-group">
-                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Mail SMTP Host <span class="required">*</span>
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Mail SMTP Host
+                                    <span class="required">*</span>
                                 </label>
                                 <div class="col-md-6 col-sm-6 col-xs-12">
                                     <input type="text" id="first-name" required="required" name="ayar_smtphost"
@@ -50,7 +51,8 @@ $ayarcek = $ayarsor->fetch(PDO::FETCH_ASSOC);
                             </div>
 
                             <div class="form-group">
-                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Mail Adresi<span class="required">*</span>
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Mail
+                                    Adresi<span class="required">*</span>
                                 </label>
                                 <div class="col-md-6 col-sm-6 col-xs-12">
                                     <input type="text" id="first-name" required="required" name="ayar_smtpuser"
@@ -60,7 +62,8 @@ $ayarcek = $ayarsor->fetch(PDO::FETCH_ASSOC);
                             </div>
 
                             <div class="form-group">
-                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Mail Şifresi<span class="required">*</span>
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Mail
+                                    Şifresi<span class="required">*</span>
                                 </label>
                                 <div class="col-md-6 col-sm-6 col-xs-12">
                                     <input type="text" id="first-name" required="required" name="ayar_smtppassword"
@@ -70,7 +73,8 @@ $ayarcek = $ayarsor->fetch(PDO::FETCH_ASSOC);
                             </div>
 
                             <div class="form-group">
-                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">SMTP Port<span class="required">*</span>
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">SMTP Port<span
+                                        class="required">*</span>
                                 </label>
                                 <div class="col-md-6 col-sm-6 col-xs-12">
                                     <input type="text" id="first-name" required="required" name="ayar_smtpport"
@@ -80,12 +84,16 @@ $ayarcek = $ayarsor->fetch(PDO::FETCH_ASSOC);
                             </div>
 
                             <div class="form-group">
-                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Site Bakımda<span class="required">*</span>
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Site
+                                    Bakımda<span class="required">*</span>
                                 </label>
                                 <div class="col-md-6 col-sm-6 col-xs-12">
-                                    <input type="text" id="first-name" required="required" name="ayar_bakim"
-                                        value="<?php echo $ayarcek['ayar_bakim'] ?>"
-                                        class="form-control col-md-7 col-xs-12">
+                                    <select id="heard" class="form-control" name="ayar_bakim" required>
+
+                                        <option value="1" <?php echo $ayarcek['ayar_bakim'] == '1' ? 'selected=""' : ''; ?>>Evet</option>
+                                        <option value="0" <?php echo $ayarcek['ayar_bakim'] == '0' ? 'selected=""' : ''; ?>>Hayır </option>
+
+                                    </select>
                                 </div>
                             </div>
 
