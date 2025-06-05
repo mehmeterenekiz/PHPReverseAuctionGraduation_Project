@@ -998,9 +998,11 @@ if (isset($_POST["teklif_onayla"])) {
     $update_teklif = $db->prepare("update teklif set 
 
             teklif_onay_durum=:teklif_onay_durum
+            
             where teklif_id = $teklif_id ");
 
     $updateteklif = $update_teklif->execute(array(
+        
         "teklif_onay_durum" => 3,
     ));
 

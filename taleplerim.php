@@ -236,7 +236,37 @@ require_once "header_user.php";
                                                 <td hidden class="yaricap"
                                                     cap="<?php echo $talepcek['talep_cember_yaricap'] ?>"> </td>
                                                 <td>
-                                                    <a
+                                                    <?php if($talepcek['talep_durum'] == '4'){ ?>
+
+                                                            <a style="pointer-events: none;"
+                                                            href="nedmin/netting/kullanici-islem?talep_url_taleplerim=talep-<?= seo($talepcek['talep_ad']) . "-" . $talepcek['talep_id'] ?>">
+                                                            <div class="map" enlem="<?php echo $talepcek['talep_konum_enlem'] ?>"
+                                                                boylam="<?php echo $talepcek['talep_konum_boylam'] ?>"
+                                                                yaricap="<?= $talepcek['talep_cember_yaricap'] ?>" zoom="<?php
+                                                                if ($talepcek['talep_cember_yaricap'] < 92000) { // 6 numara
+                                                                    echo '7';
+                                                                } else if ($talepcek['talep_cember_yaricap'] < 185000) {  // 1 numara
+                                                                    echo '6';
+                                                                } elseif ($talepcek['talep_cember_yaricap'] < 395000) {
+                                                                    echo '5';
+                                                                } else {
+                                                                    echo '4';
+                                                                }
+                                                                ?>"></div>
+                                                            <?php
+                                                            if ($talepcek['talep_durum'] == 2 || $talepcek['talep_durum'] == 3) { ?>
+                                                                <div class="map-container">
+                                                                    <div class="text">
+                                                                        kaldırıldı
+                                                                    </div>
+                                                                </div>
+                                                            <?php } ?>
+                                                        </a>
+
+                                                    
+                                                    <?php } else {?>
+
+                                                            <a
                                                         href="nedmin/netting/kullanici-islem?talep_url_taleplerim=talep-<?= seo($talepcek['talep_ad']) . "-" . $talepcek['talep_id'] ?>">
                                                         <div class="map" enlem="<?php echo $talepcek['talep_konum_enlem'] ?>"
                                                             boylam="<?php echo $talepcek['talep_konum_boylam'] ?>"
@@ -261,6 +291,7 @@ require_once "header_user.php";
                                                         <?php } ?>
                                                     </a>
 
+                                                    <?php } ?>
                                                 </td>
                                                 <td>
                                                     <?php
@@ -314,8 +345,11 @@ require_once "header_user.php";
                                                                         class="btn btn-danger btn-xs">Yayından Kaldırıldı</button>
                                                                     <p style="font-size: 12px;">Admin tarafından</p>
 
-                                                    <?php } ?>
+                                                    <?php } else { ?>
 
+                                                                    <p style="font-size: 12px;">Teklif Onayı Verdiniz</p>
+
+                                                    <?php } ?>
                                                 </td>
                                             </tr>
 
