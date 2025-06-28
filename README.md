@@ -17,3 +17,5 @@ Bu tez çalışması, vasıta arayan ve vasıta satan kullanıcılar için bir e
 ![AnaSayfa_Ekranı](website-gorseller/Anasayfa_Ekranı_1.png)
 
 ![AnaSayfa_Ekranı](website-gorseller/Anasayfa_Ekranı_2.png)
+
+![AnaSayfa_Ekranı](website-gorseller/footer.png)
