@@ -1,5 +1,4 @@
 Bu tez çalışması, Tersine Açık Arttırma Sistemi adını taşıyan bitirme projesi olarak gerçekleştirilmiştir. 
-
 Projenin tüm geliştirme süreçleri, Bilgisayar Mühendisliği Bölümü öğrencisi Mehmet Eren Ekiz tarafından yürütülmüştür.
 
 Projede;
