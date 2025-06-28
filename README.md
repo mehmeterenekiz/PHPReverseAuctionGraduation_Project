@@ -13,3 +13,5 @@ Proje geliştirme sürecinde çeşitli çevrim içi kurslar ve dokümanlardan fa
 
 
 Bu tez çalışması, vasıta arayan ve vasıta satan kullanıcılar için bir e-ticaret platformu geliştirmeyi amaçlamaktadır. Projede, talep tabanlı bir yaklaşım benimsenmiş olup, vasıta arayan kullanıcıların ihtiyaçlarına yönelik talepler oluşturmaları sağlanmaktadır. Bu taleplere karşılık olarak, vasıta satan kullanıcıların ilgili taleplere teklif verebilmesi mümkün kılınmıştır.
+
+![Giriş Ekranı](website-görselleri/Anasayfa Ekranı 1.png)
