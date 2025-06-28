@@ -10,3 +10,6 @@ Frontend hazır bir şablon olarak alınmış ve birçok kısım ihtiyaçlara g�
 Backend tarafı baştan sona özgün olarak yazılmıştır.
 
 Proje geliştirme sürecinde çeşitli çevrim içi kurslar ve dokümanlardan faydalanılmıştır.
+
+
+Bu tez çalışması, vasıta arayan ve vasıta satan kullanıcılar için bir e-ticaret platformu geliştirmeyi amaçlamaktadır. Projede, talep tabanlı bir yaklaşım benimsenmiş olup, vasıta arayan kullanıcıların ihtiyaçlarına yönelik talepler oluşturmaları sağlanmaktadır. Bu taleplere karşılık olarak, vasıta satan kullanıcıların ilgili taleplere teklif verebilmesi mümkün kılınmıştır.
